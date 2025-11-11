@@ -1,0 +1,82 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.egg
+*.egg-info/
+*.eggs/
+build/
+dist/
+pip-wheel-metadata/
+*.manifest
+*.spec
+
+# ---- Virtual environments ----
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+
+# ---- Jupyter notebooks ----
+.ipynb_checkpoints/
+# Avoid saving large notebook output files accidentally
+*.nbconvert.ipynb
+
+# ---- Logs and databases ----
+*.log
+*.sqlite3
+*.db
+*.pid
+
+# ---- Unit test / coverage reports ----
+.coverage
+.tox/
+.nox/
+pytest_cache/
+htmlcov/
+coverage.xml
+
+# ---- Environment files ----
+.env
+.env.*
+*.env
+secrets.json
+
+# ---- Docker ----
+# Docker volumes and build cache
+*.tar
+.dockerignore
+docker-compose.override.yml
+Dockerfile.*
+!Dockerfile
+
+# ---- MLflow ----
+mlruns/
+mlartifacts/
+model_registry/
+mlflow.db
+
+# ---- Data and model artifacts ----
+data/
+datasets/
+*.csv
+*.parquet
+*.h5
+*.pkl
+*.joblib
+models/
+artifacts/
+checkpoints/
+
+# ---- IDEs / Editors ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# ---- OS-specific ----
+.DS_Store
+Thumbs.db
