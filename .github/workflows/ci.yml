@@ -21,7 +21,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install dvc[all]
         pip install mlflow
 
     - name: Pull DVC data
@@ -31,13 +30,10 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Run linting
-      run: |
-        pip install flake8
-        flake8 src
+      run: flake8 src tests
 
     - name: Run tests
-      run: |
-        pytest -q
+      run: pytest 
 
     - name: Test training script (quick mode)
       run: |
