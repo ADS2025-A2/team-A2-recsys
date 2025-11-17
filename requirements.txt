@@ -1,0 +1,8 @@
+numpy
+pandas
+scikit-learn
+mlflow
+dvc[s3]
+pytest
+# CI/Testing/Linting Tools
+flake8

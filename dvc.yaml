@@ -1,0 +1,11 @@
+stages:
+  train:
+    cmd: python src/train.py
+    deps:
+    - data/processed
+    - src/train.py
+    params:
+    - epochs
+    - lr
+    outs:
+    - models
