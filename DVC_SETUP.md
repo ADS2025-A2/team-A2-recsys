@@ -125,7 +125,7 @@ dvc pull
 DVC will download the dataset from Azure Blob Storage into:
 
 ```
-ml-10M100K/rating.dat
+ml-10M100K/ratings.dat
 ```
 
 Important: do not commit `ratings.dat` to Git. It must remain ingored.
