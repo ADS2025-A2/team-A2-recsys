@@ -1,5 +1,11 @@
+
+import sys
+import os
 import importlib
 import pytest
+
+# Add src directory to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 
 MODULES = [
