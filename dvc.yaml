@@ -8,4 +8,4 @@ stages:
     - epochs
     - lr
     outs:
-    - models
+
