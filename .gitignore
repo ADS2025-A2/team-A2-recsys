@@ -66,7 +66,6 @@ datasets/
 *.h5
 *.pkl
 *.joblib
-#models/
 artifacts/
 checkpoints/
 
@@ -80,4 +79,3 @@ checkpoints/
 # ---- OS-specific ----
 .DS_Store
 Thumbs.db
-#/models
