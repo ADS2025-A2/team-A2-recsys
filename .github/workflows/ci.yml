@@ -25,7 +25,7 @@ jobs:
         pip install mlflow
 
     - name: Pull DVC data
-      run: dvc pull
+      run: dvc pull --force
       env:
         AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
         AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
