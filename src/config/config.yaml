@@ -1,0 +1,10 @@
+experiment_name: "baseline_model"
+
+paths:
+  data_path: "ml-10M100K/ratings.dat"   # DVC-tracked file
+  models_dir: "models"
+  logs_dir: "logs"                      # optional, in case you want it later
+
+training:
+  random_seed: 42
+  test_size: 0.2
