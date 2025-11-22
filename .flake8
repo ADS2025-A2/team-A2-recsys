@@ -1,6 +1,6 @@
 [flake8]
 # B901, B902, B950: opinionated style/bug checks
-ignore = W503, **E305, F401**
+ignore = W503, E305, F401
 max-line-length = 88
 exclude = .git,__pycache__,docs,venv,build,dist,mlruns,.dvc
 max-complexity = 10
