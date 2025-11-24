@@ -4,6 +4,10 @@ from datetime import datetime, timedelta
 import json
 import os
 import hashlib
+from database import init_db, verify_login, register_user
+
+# --- initialise database ---
+init_db()
 
 # --- cookie setup ---
 cookies = EncryptedCookieManager(
@@ -13,21 +17,6 @@ cookies = EncryptedCookieManager(
 
 if not cookies.ready():
     st.stop()
-
-def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def load_users():
-    if not os.path.exists("users.json"):
-        return {}
-    with open("users.json", "r") as f:
-        return json.load(f)
-
-def save_users(users):
-    with open("users.json", "w") as f:
-        json.dump(users, f, indent=4)
-
-users = load_users()
 
 # --- Session State ---
 if "authenticated" not in st.session_state:
@@ -70,13 +59,16 @@ if not st.session_state.authenticated:
 # --- Login ---
     if st.session_state.mode == "Login":
         if st.button("Log in"):
-            hashed = hash_password(password)
-            if username in users and users[username] == hashed:
+            if verify_login(username, password):
                 st.session_state.authenticated = True
                 st.session_state.username = username
+
+                # Set cookies if using EncryptedCookieManager
                 cookies["username"] = username
                 cookies["expiry"] = (datetime.now() + timedelta(hours=1)).isoformat()
                 cookies.save()
+
+                st.success("Login successful!")
                 st.rerun()
             else:
                 st.error("Invalid username or password.")
@@ -84,16 +76,15 @@ if not st.session_state.authenticated:
     else:
         confirm = st.text_input("Confirm Password", type="password")
         if st.button("Register"):
-            if username in users:
-                st.error("User already exists.")
-            elif password != confirm:
+            if password != confirm:
                 st.error("Passwords do not match.")
             else:
-                users[username] = hash_password(password)
-                save_users(users)
-                st.success("Account created. Please log in.")
-                st.session_state.mode = "Login"
-
+                success = register_user(username, password)
+                if success:
+                    st.success("Account created. Please log in.")
+                    st.session_state.mode = "Login"
+                else:
+                    st.error("Username already exists.")
     st.stop()
 
 # --- Home page after login ---    
