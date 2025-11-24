@@ -23,13 +23,13 @@ col1, col2 = st.columns([3,1])
 with col1:
     st.title("Profile")
 
-    st.header("Personal Information")
+    #st.header("Personal Information")
     st.write("Username:", st.session_state.username)
 
     username = st.session_state.username
     current_genres = get_preferences(username)
 
-    genres = pd.read_csv(r"data/processed/unique_genres.csv")
+    genres = pd.read_csv(r"src/app/unique_genres.csv")
 
     selected = st.multiselect(
         "Choose your favourite genres:",
