@@ -61,7 +61,6 @@ mlflow.db
 # ---- Data and model artifacts ----
 data/
 datasets/
-*.csv
 *.parquet
 *.h5
 *.pkl
