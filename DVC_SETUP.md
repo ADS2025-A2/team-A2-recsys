@@ -90,11 +90,11 @@ git checkout dev
 git pull origin dev
 ```
 
-### 2. Install DVC(One-Time Step)
+### 2. Install DVC with Azure support(One-Time Step)
 Install using pip 
 
 ```
-pip install dvc
+pip install "dvc[azure]"
 ```
 
 Verify installation:
@@ -102,21 +102,33 @@ Verify installation:
 dvc --version
 ```
 
-### 3. Obtain the `ratings.dat` Dataset
+### 3. Configure Azure Credentials
+You must export two environment variables locally. These allow DVC to authenticate with Azure.
+Replace values with the team-provided credentials.
+
+```
+export AZURE_STORAGE_ACCOUNT="your-storage-account-name"
+export AZURE_STORAGE_KEY="your-access-key"
+
+```
+
+These must not be commited to Git or stored in the repository. 
+
+### 4. Pull the Dataset from Azure
+
+Once credentials are set, run:
 
 ```
 dvc pull
 ```
 
-This downloads `ratings.dat` into:\
+DVC will download the dataset from Azure Blob Storage into:
 
 ```
 ml-10M100K/ratings.dat
-
 ```
 
-Important:
-Do not commit ratings.dat to Git. It must remain ignored.
+Important: do not commit `ratings.dat` to Git. It must remain ingored.
 
 ## Ongoing Workflow
 
