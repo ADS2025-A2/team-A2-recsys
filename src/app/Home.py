@@ -1,15 +1,23 @@
+# App/Home.py
+
 import streamlit as st
 from streamlit_cookies_manager import EncryptedCookieManager
 from datetime import datetime, timedelta
-import json
+import pandas as pd
+import requests
 import os
-import hashlib
+import sys
 from database import init_db, verify_login, register_user
+from model.recommendations import DUMMY_RECOMMENDATIONS
 
-# --- initialise database ---
+# ========================
+# INIT DATABASE
+# ========================
 init_db()
 
-# --- cookie setup ---
+# ========================
+# COOKIE SETUP
+# ========================
 cookies = EncryptedCookieManager(
     prefix="movie_app/",
     password="super_secret_key_123"
@@ -18,7 +26,9 @@ cookies = EncryptedCookieManager(
 if not cookies.ready():
     st.stop()
 
-# --- Session State ---
+# ========================
+# SESSION STATE
+# ========================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "username" not in st.session_state:
@@ -26,7 +36,7 @@ if "username" not in st.session_state:
 if "mode" not in st.session_state:
     st.session_state.mode = "login"
 
-# --- Check cookie for authentication ---
+# Leer cookies
 cookie_username = cookies.get("username")
 cookie_expiry = cookies.get("expiry")
 
@@ -35,6 +45,7 @@ if cookie_username and cookie_expiry:
     if datetime.now() < expiry_time:
         st.session_state.authenticated = True
         st.session_state.username = cookie_username
+
 
 # --- Hide sidebar on login screen ---
 if not st.session_state.authenticated:
@@ -45,25 +56,26 @@ if not st.session_state.authenticated:
         </style>
     """
     st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+    
 
-# --- Main ---
+# ========================
+# LOGIN SCREEN
+# ========================
 if not st.session_state.authenticated:
-
     st.title("Welcome")
     st.header("Please log in or register")
-    st.session_state.mode = st.radio("Select:", ["Login", "Register"])
 
+    st.session_state.mode = st.radio("Select:", ["Login", "Register"])
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-# --- Login ---
+    # LOGIN
     if st.session_state.mode == "Login":
         if st.button("Log in"):
             if verify_login(username, password):
                 st.session_state.authenticated = True
                 st.session_state.username = username
 
-                # Set cookies if using EncryptedCookieManager
                 cookies["username"] = username
                 cookies["expiry"] = (datetime.now() + timedelta(hours=1)).isoformat()
                 cookies.save()
@@ -72,7 +84,8 @@ if not st.session_state.authenticated:
                 st.rerun()
             else:
                 st.error("Invalid username or password.")
-# --- Register ---
+
+    # REGISTER
     else:
         confirm = st.text_input("Confirm Password", type="password")
         if st.button("Register"):
@@ -85,9 +98,68 @@ if not st.session_state.authenticated:
                     st.session_state.mode = "Login"
                 else:
                     st.error("Username already exists.")
+
     st.stop()
 
-# --- Home page after login ---    
+# ========================
+# MAIN PAGE — USER LOGGED IN
+# ========================
+st.title("🎬 Movie Recommendations App")
+st.write(f"👤 Logged in as **{st.session_state.username}**")
 
-st.title("Movie Recommendations")
-st.image("Movie theatre.jpg")
+# ========================
+# MOVIE CATALOG
+# ========================
+st.subheader("📚 Movie Catalog")
+
+try:
+    response = requests.get("http://127.0.0.1:8000/movies")
+    response.raise_for_status()
+    movies = response.json()
+
+    df = pd.DataFrame(movies)
+    df["genres"] = df["genres"].str.replace("|", ", ")
+    st.dataframe(df.head(10))
+
+except Exception as e:
+    st.error(f"No se pudo cargar la información: {e}")
+
+# ========================
+# RECOMMENDATIONS FOR LOGGED-IN USER
+# ========================
+st.subheader("🔥 Recommended Movies For You")
+
+username = st.session_state.username
+
+# Convert username to a numeric id for testing dummy recommendations
+# Simple example: hash the username and mod by 10, then +1 to get id 1-10
+user_id = (abs(hash(username)) % 10) + 1
+recommended_movies = DUMMY_RECOMMENDATIONS.get(user_id, [])
+
+# Mostrar recomendaciones en grid de 3 columnas
+if recommended_movies:
+    cols = st.columns(3)
+    for idx, movie in enumerate(recommended_movies):
+        with cols[idx % 3]:
+            st.markdown(
+                f"""
+                <div style='padding: 10px; border: 1px solid #ddd; 
+                            border-radius: 10px; margin-bottom: 15px;'>
+                    <h4 style='margin-bottom: 5px;'>{movie['title']}</h4>
+                    <p style='color: gray;'>🎭 {movie['genre']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+else:
+    st.info("No recommendations available for this user.")
+
+
+options = df["title"]
+
+
+st.session_state.selected_movie = None
+st.session_state.selected_movie = st.multiselect("Search for a movie:", options)
+
+if st.session_state.selected_movie:
+    st.switch_page("pages/1_Details.py")
