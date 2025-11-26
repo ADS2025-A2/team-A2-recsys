@@ -14,13 +14,18 @@ torch.set_num_threads(1)
 
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 from spotlight.interactions import Interactions
 from spotlight.cross_validation import user_based_train_test_split
 from spotlight.evaluation import mrr_score, precision_recall_score
 from spotlight.factorization.implicit import ImplicitFactorizationModel
 
-RATINGS_PATH = "ml-10M100K/ratings.dat"
+
+ROOT = Path(__file__).resolve().parents[2]
+
+RATINGS_PATH = ROOT / "ml-10M100K" / "ratings.dat"
+
 
 def load_ratings(path: str) -> pd.DataFrame:
     cols = ["user_id", "item_id", "rating", "timestamp"]
