@@ -2,7 +2,7 @@
 
 import yaml
 from pathlib import Path
-
+import mlflow
 
 def load_config() -> dict:
     """
@@ -38,7 +38,18 @@ def load_data(data_path: Path):
 def main():
     config, project_root = load_config()
 
-    experiment_name = config.get("experiment_name", "unnamed_experiment")
+    # MLflow tracking configuration (Task 1)
+    tracking_uri = f"file:{(project_root / 'mlruns').as_posix()}"
+    mlflow.set_tracking_uri(tracking_uri)
+    print(f"MLflow tracking URI set to: {tracking_uri}")
+
+
+    # MLflow experiment setup (Task 2) 
+    experiment_name = config.get("experiment_name", "training_runs")
+    mlflow.set_experiment(experiment_name)
+    print(f"MLflow experiment set to: {experiment_name}")
+    
+
     paths_cfg = config.get("paths", {})
     data_rel = paths_cfg.get("data_path", "ml-10M100K/ratings.dat")
     models_dir_rel = paths_cfg.get("models_dir", "models")
@@ -46,20 +57,26 @@ def main():
     data_path = project_root / data_rel
     models_dir = project_root / models_dir_rel
 
-    print(f"Running experiment: {experiment_name}")
-    print(f"Using data path: {data_path}")
-    print(f"Models will be saved to: {models_dir}")
+    # MLflow run + placeholder logging (Task 3) 
+    # This creates an MLflow run every time you call ⁠ python train_model.py ⁠
+    with mlflow.start_run(run_name="placeholder_training_run"):
+        print(f"Running experiment: {experiment_name}")
+        print(f"Using data path: {data_path}")
+        print(f"Models will be saved to: {models_dir}")
 
-    models_dir.mkdir(parents=True, exist_ok=True)
+        models_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load data from the DVC-tracked path
-    load_data(data_path)
+        # Log placeholder parameters (for now)
+        mlflow.log_param("data_path", str(data_path))
+        mlflow.log_param("models_dir", str(models_dir))
+        mlflow.log_param("model_status", "no_model_yet")  # will change when real model is added
 
-    # TODO: Data Scientist will implement:
-    #  - feature engineering
-    #  - train/validation split
-    #  - model training
-    #  - saving model artifact(s) into models_dir
+        # Log a dummy metric (for now)
+        mlflow.log_metric("placeholder_metric", 0.0)
+
+        # Load data from the DVC-tracked path (still just previewing)
+        load_data(data_path)
+  
 
 
 if __name__ == "__main__":
