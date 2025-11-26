@@ -59,7 +59,9 @@ def main():
 
     # MLflow run + placeholder logging (Task 3) 
     # This creates an MLflow run every time you call ⁠ python train_model.py ⁠
-    with mlflow.start_run(run_name="placeholder_training_run"):
+    with mlflow.start_run(run_name="placeholder_training_run") as run:
+        run_id = run.info.run_id
+        print(f"Running experiment: {experiment_name}")
         print(f"Running experiment: {experiment_name}")
         print(f"Using data path: {data_path}")
         print(f"Models will be saved to: {models_dir}")
@@ -70,12 +72,28 @@ def main():
         mlflow.log_param("data_path", str(data_path))
         mlflow.log_param("models_dir", str(models_dir))
         mlflow.log_param("model_status", "no_model_yet")  # will change when real model is added
-
-        # Log a dummy metric (for now)
-        mlflow.log_metric("placeholder_metric", 0.0)
+        mlflow.log_metric("placeholder_metric", 0.0) # Log a dummy metric (for now)
 
         # Load data from the DVC-tracked path (still just previewing)
         load_data(data_path)
+
+        model_file = models_dir / "dummy_model.txt"
+        model_file.write_text("This is a placeholder model.\n")
+
+        # Log file as MLflow artifact
+        mlflow.log_artifact(str(model_file), artifact_path="model")
+
+        # REGISTER MODEL → Automatically creates version
+
+        model_uri = f"runs:/{run_id}/model"
+        registered_model_name = "baseline_model"
+
+        result = mlflow.register_model(
+            model_uri=model_uri,
+            name=registered_model_name,
+        )
+
+        print(f"Registered new model version: {result.version}")
   
 
 
