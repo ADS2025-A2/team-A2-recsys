@@ -62,3 +62,25 @@ def get_movie_cast(title, year):
         return cast_list
     else:
         return ["Cast information not available."]
+    
+
+@st.cache_data(show_spinner=False)
+def get_movie_runtime(title, year):
+    # First, search movie to get ID
+    search_url = f"{BASE_URL}/search/movie"
+    params = {"api_key": key, "query": title, "year": year}
+    response = requests.get(search_url, params=params)
+    data = response.json()
+
+    if not data["results"]:
+        return None
+
+    movie_id = data["results"][0]["id"]
+
+    # Get movie details using ID
+    details_url = f"{BASE_URL}/movie/{movie_id}"
+    details_params = {"api_key": key}
+    details = requests.get(details_url, params=details_params).json()
+
+    runtime = details.get("runtime")
+    return runtime

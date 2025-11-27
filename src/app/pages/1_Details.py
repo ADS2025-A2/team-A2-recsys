@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from api import get_movie_poster, get_movie_summary, get_movie_cast
+from api import get_movie_poster, get_movie_summary, get_movie_cast, get_movie_runtime
 
 def star_rating(rating, max_stars=5):
     full_star = "★"
@@ -17,6 +17,7 @@ def show_info(movie):
     full_title = movie[0]
     title, year = full_title.rsplit(" (", 1)
     year = year.replace(")", "")
+    duration = get_movie_runtime(title, year)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -30,6 +31,11 @@ def show_info(movie):
                 f"<p style='font-size:20px; color:#111; margin:0;'>Year: {year}</p>",
                 unsafe_allow_html=True
             )
+        if duration:
+            st.markdown(
+                    f"<p style='font-size:20px; color:#111; margin:0;'>Duration: {duration} mins</p>",
+                    unsafe_allow_html=True
+                )
 
         avg_ratings_df = st.session_state.avg_ratings
         rating_row = avg_ratings_df[avg_ratings_df["title"] == full_title]
