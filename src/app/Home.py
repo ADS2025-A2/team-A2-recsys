@@ -1,12 +1,8 @@
-# App/Home.py
-
 import streamlit as st
 from streamlit_cookies_manager import EncryptedCookieManager
 from datetime import datetime, timedelta
 import pandas as pd
 import requests
-import os
-import sys
 from database import init_db, verify_login, register_user
 from model.recommendations import DUMMY_RECOMMENDATIONS
 
@@ -104,22 +100,20 @@ if not st.session_state.authenticated:
 # ========================
 # MAIN PAGE — USER LOGGED IN
 # ========================
-st.title("🎬 Movie Recommendations App")
-st.write(f"👤 Logged in as **{st.session_state.username}**")
+st.title("🎬 Movie Recommendations")
 
 # ========================
 # MOVIE CATALOG
 # ========================
-st.subheader("📚 Movie Catalog")
 
 try:
     response = requests.get("http://127.0.0.1:8000/movies")
     response.raise_for_status()
     movies = response.json()
 
-    df = pd.DataFrame(movies)
-    df["genres"] = df["genres"].str.replace("|", ", ")
-    st.dataframe(df.head(10))
+    st.session_state.df = pd.DataFrame(movies)
+    st.session_state.df["genres"] = st.session_state.df["genres"].str.replace("|", ", ")
+    st.write(st.session_state.df.head(10))
 
 except Exception as e:
     st.error(f"No se pudo cargar la información: {e}")
@@ -141,22 +135,25 @@ if recommended_movies:
     cols = st.columns(3)
     for idx, movie in enumerate(recommended_movies):
         with cols[idx % 3]:
-            st.markdown(
-                f"""
-                <div style='padding: 10px; border: 1px solid #ddd; 
-                            border-radius: 10px; margin-bottom: 15px;'>
-                    <h4 style='margin-bottom: 5px;'>{movie['title']}</h4>
-                    <p style='color: gray;'>🎭 {movie['genre']}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            with st.form(key=f"movie_form_{idx}"):
+                st.markdown(
+                    f"""
+                    <div style='padding: 10px; border: 1px solid #ddd; 
+                                border-radius: 10px; margin-bottom: 15px;'>
+                        <h4 style='margin-bottom: 5px;'>{movie['title']}</h4>
+                        <p style='color: gray;'>🎭 {movie['genre']}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                submitted = st.form_submit_button("Info")
+                if submitted:
+                    st.session_state.selected_movie = movie
+                    st.switch_page("pages/1_Details.py")
 else:
     st.info("No recommendations available for this user.")
 
-
-options = df["title"]
-
+options = st.session_state.df["title"]
 
 st.session_state.selected_movie = None
 st.session_state.selected_movie = st.multiselect("Search for a movie:", options)

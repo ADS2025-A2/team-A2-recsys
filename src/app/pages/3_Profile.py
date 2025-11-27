@@ -34,7 +34,8 @@ with col1:
     selected = st.multiselect(
         "Choose your favourite genres:",
         genres,
-        default=current_genres)
+        default=current_genres,
+        max_selections=5)
 
     if st.button("Save Preferences"):
         save_preferences(username, selected)
