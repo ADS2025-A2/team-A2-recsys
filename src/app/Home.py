@@ -113,7 +113,11 @@ try:
 
     st.session_state.df = pd.DataFrame(movies)
     st.session_state.df["genres"] = st.session_state.df["genres"].str.replace("|", ", ")
-    st.write(st.session_state.df.head(10))
+
+    if "avg_ratings" not in st.session_state:
+        st.session_state.avg_ratings = pd.read_csv(
+            "avg_rating_per_movie.csv"
+        )
 
 except Exception as e:
     st.error(f"No se pudo cargar la información: {e}")

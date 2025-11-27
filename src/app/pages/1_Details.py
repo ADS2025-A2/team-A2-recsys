@@ -1,5 +1,17 @@
 import streamlit as st
+import pandas as pd
 from api import get_movie_poster, get_movie_summary, get_movie_cast
+
+def star_rating(rating, max_stars=5):
+    full_star = "★"
+    empty_star = "☆"
+    half_star = "⯨"
+
+    stars = full_star * int(rating)
+    if rating - int(rating) >= 0.5:
+        stars += half_star
+    stars += empty_star * (max_stars - len(stars))
+    return stars
 
 def show_info(movie):
     full_title = movie[0]
@@ -10,8 +22,29 @@ def show_info(movie):
     with col1:
         st.subheader(title)
         selected_genre = st.session_state.df.loc[st.session_state.df["title"] == full_title, "genres"].values[0]
-        st.write("Genre:", selected_genre)
-        st.write("Year:", year)
+        st.markdown(
+                f"<p style='font-size:20px; color:#111; margin:0;'>Genre: {selected_genre}</p>",
+                unsafe_allow_html=True
+            )
+        st.markdown(
+                f"<p style='font-size:20px; color:#111; margin:0;'>Year: {year}</p>",
+                unsafe_allow_html=True
+            )
+
+        avg_ratings_df = st.session_state.avg_ratings
+        rating_row = avg_ratings_df[avg_ratings_df["title"] == full_title]
+
+        if not rating_row.empty:
+            rating = rating_row["rating"].values[0]
+            st.markdown(
+                f"<p style='font-size:20px; color:#111; margin:0;'>Average Rating: {star_rating(rating)}</p>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                "<p style='font-size:16px; color:#111; margin:0;'>Average Rating: N/A</p>",
+                unsafe_allow_html=True
+            )
 
     with col2:
         with st.spinner("Loading movie poster..."):
