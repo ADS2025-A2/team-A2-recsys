@@ -33,6 +33,45 @@ def load_data(data_path: Path):
             if not line:
                 break
             print(line.strip())
+import subprocess
+import re
+
+def create_git_tag():
+    """
+    Creates a semantic version git tag for the trained model.
+    Format: model-vX.Y.Z
+    Bumps the patch version automatically.
+    """
+    try:
+        last_tag = subprocess.check_output(
+            ["git", "describe", "--tags", "--match", "model-v*"],
+            stderr=subprocess.STDOUT
+        ).decode().strip()
+    except subprocess.CalledProcessError:
+        last_tag = None
+
+    if last_tag:
+        print(f"Found previous tag: {last_tag}")
+        version_match = re.search(r"model-v(\d+)\.(\d+)\.(\d+)", last_tag)
+        if not version_match:
+            raise ValueError(f"Invalid tag format: {last_tag}")
+
+        major, minor, patch = map(int, version_match.groups())
+        patch += 1  # bump patch version
+    else:
+        print("No previous model tag found. Starting with model-v1.0.0")
+        major, minor, patch = 1, 0, 0
+
+    new_tag = f"model-v{major}.{minor}.{patch}"
+    
+    try:
+        subprocess.check_call(["git", "tag", new_tag])
+        subprocess.check_call(["git", "push", "origin", new_tag])
+        print(f"Created and pushed git tag: {new_tag}")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Failed to create or push git tag: {e}")
+
+    return new_tag
 
 
 def main():
@@ -94,7 +133,8 @@ def main():
         )
 
         print(f"Registered new model version: {result.version}")
-  
+        new_tag = create_git_tag()
+        print(f"Created git release tag: {new_tag}")
 
 
 if __name__ == "__main__":
