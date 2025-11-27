@@ -6,21 +6,24 @@ def show_info(movie):
     title, year = full_title.rsplit(" (", 1)
     year = year.replace(")", "")
 
-    st.subheader(title)
-    selected_genre = st.session_state.df.loc[st.session_state.df["title"] == full_title, "genres"].values[0]
-    st.write("Genre:", selected_genre)
-    st.write("Year:", year)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader(title)
+        selected_genre = st.session_state.df.loc[st.session_state.df["title"] == full_title, "genres"].values[0]
+        st.write("Genre:", selected_genre)
+        st.write("Year:", year)
 
-    with st.spinner("Loading movie poster..."):
-        poster_url = get_movie_poster(title, year)
-        summary = get_movie_summary(title, year)
-        cast = get_movie_cast(title, year)
+    with col2:
+        with st.spinner("Loading movie poster..."):
+            poster_url = get_movie_poster(title, year)
+            summary = get_movie_summary(title, year)
+            cast = get_movie_cast(title, year)
 
-    if poster_url:
-        st.image(poster_url, width=300)
-    else:
-        st.warning("Poster not found on TMDb.")
-    
+        if poster_url:
+            st.image(poster_url, width=200)
+        else:
+            st.warning("Movie poster not found.")
+        
     st.write(summary)
     st.write("**Top Cast:**", ", ".join(cast))
     
@@ -39,7 +42,7 @@ if selected:
     show_info(selected)
 
 if st.session_state.selected_movie:
-    selected_movie = st.session_state.selected_movie
-    show_info(selected_movie)
+    show_info(st.session_state.selected_movie)
+    st.session_state.selected_movie = None
 
 
