@@ -12,7 +12,6 @@ Below you will find a clear explanation of the repository structure and **import
 ├── .dvc/                     # DVC metadata
 ├── .github/                  # CI/CD workflows and automation
 ├── data/                     # Project datasets (tracked via DVC)
-├── spotlight/                # Chosen model + training artifacts
 ├── src/                      # Main source code
 │   ├── app/                  # Inference application and API endpoints
 │   ├── config/               # YAML config files for training/inference
@@ -46,6 +45,7 @@ This includes:
 * Training scripts
 * Model loading logic
 * Utility functions
+* Models that are part of the “chosen solution.”
 * Config helpers
 * App / API code
 
@@ -61,13 +61,6 @@ If you write code that will be imported from anywhere else, it **must** be insid
 
 ---
 
-### **`spotlight/`**
-
-* Models that are part of the “chosen solution.”
-* These are **not** ignored.
-* Do **not** manually add other model files here without aligning with the ML team.
-
----
 
 ### **`tests/`**
 
@@ -93,7 +86,7 @@ Allowed:
 * DVC files (`.dvc`)
 * Small test artifacts
   Forbidden:
-* CSVs, parquet, raw models, checkpoints
+* parquet, raw models, checkpoints
   Use:
 
 ```
