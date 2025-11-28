@@ -1,9 +1,12 @@
 numpy
 pandas
 scikit-learn
+PyGithub
 mlflow
 dvc[s3]
 dvc[azure]
 pytest
 # CI/Testing/Linting Tools
 flake8
+streamlit
+streamlit-cookies-manager

@@ -9,7 +9,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 
 MODULES = [
-    "src.train",
+    "src.training.train_model",
     "src.utils",
 ]
 

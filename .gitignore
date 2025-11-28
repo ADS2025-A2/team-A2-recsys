@@ -53,13 +53,13 @@ Dockerfile.*
 !Dockerfile
 
 # ---- MLflow ----
+
 mlruns/
 mlartifacts/
 model_registry/
 mlflow.db
 
 # ---- Data and model artifacts ----
-data/
 datasets/
 *.parquet
 *.h5

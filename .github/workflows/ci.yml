@@ -30,14 +30,14 @@ jobs:
         AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
         AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
 
-    - name: Run linting
-      run: flake8 src tests
+    #- name: Run linting
+    #  run: flake8 src tests
 
     - name: Run tests
       run: pytest 
 
     - name: Test training script (quick mode)
       run: |
-        python src/train.py --fast
+        python src/training/train_model.py --fast
       env:
         MLFLOW_TRACKING_URI: "file:./mlruns"

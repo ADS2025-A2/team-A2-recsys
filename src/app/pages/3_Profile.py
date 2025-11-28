@@ -29,12 +29,13 @@ with col1:
     username = st.session_state.username
     current_genres = get_preferences(username)
 
-    genres = pd.read_csv(r"src/app/unique_genres.csv")
+    genres = pd.read_csv("unique_genres.csv")
 
     selected = st.multiselect(
         "Choose your favourite genres:",
         genres,
-        default=current_genres)
+        default=current_genres,
+        max_selections=5)
 
     if st.button("Save Preferences"):
         save_preferences(username, selected)
