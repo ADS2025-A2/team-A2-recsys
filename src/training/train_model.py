@@ -16,62 +16,70 @@ def load_config() -> dict:
     return config, project_root
 
 
+from dvc.api import DVCFileSystem
+
 def load_data(data_path: Path):
     """
-    Placeholder data loader. For now, just check that the file exists
-    and maybe read a few lines. Later, the DS can replace this with
-    proper pandas/pyarrow loading etc.
+    Try to load the dataset. If missing, automatically attempt a DVC pull.
     """
-    if not data_path.exists():
-        raise FileNotFoundError(f"Data file not found at: {data_path}")
 
-    print(f"Found data at: {data_path}")
-    # Example: preview first few lines
+    if data_path.exists():
+        print(f"Found data at: {data_path}")
+    else:
+        print(f"⚠️ Data file not found at: {data_path}")
+        print("Attempting: dvc pull ...")
+
+        # Create a DVC filesystem object (uses .dvc/config + remotes)
+        fs = DVCFileSystem(".")
+
+        try:
+            # This pulls the file and its dependencies from the configured remote
+            fs.get(str(data_path), str(data_path))
+            print("✔ DVC pull successful.")
+        except Exception as e:
+            raise FileNotFoundError(
+                f"Failed to pull data via DVC.\n"
+                f"Reason: {e}\n"
+                f"Make sure DVC remotes are configured: `dvc remote list`"
+            )
+
+        # Re-check
+        if not data_path.exists():
+            raise FileNotFoundError(f"❌ Data still not found after DVC pull: {data_path}")
+
+    # Preview first lines
+    print(f"Opening data file...")
     with data_path.open("r", encoding="latin-1") as f:
         for i in range(5):
             line = f.readline()
             if not line:
                 break
             print(line.strip())
+
+
 import subprocess
 import re
 
-def create_git_tag():
+class DummyModel(mlflow.pyfunc.PythonModel):
+    def predict(self, context, model_input):
+        return ["dummy"] * len(model_input)
+
+
+def create_git_tag(version: str, subversion: str):
     """
-    Creates a semantic version git tag for the trained model.
-    Format: model-vX.Y.Z
-    Bumps the patch version automatically.
+    Creates a Git tag using the MLflow model version, e.g., 1.1, 1.2, and pushes it.
+    Works only if repo exists and user has permissions.
     """
+    # Convert MLflow version (int) to tag like 1.1, 1.2
+    tag_name = f"{version}.{subversion}"
     try:
-        last_tag = subprocess.check_output(
-            ["git", "describe", "--tags", "--match", "model-v*"],
-            stderr=subprocess.STDOUT
-        ).decode().strip()
-    except subprocess.CalledProcessError:
-        last_tag = None
+        subprocess.run(["git", "tag", tag_name], check=True)
+        #subprocess.run(["git", "push", "--tags"], check=True)
+        print(f"Created and pushed Git tag: {tag_name}")
 
-    if last_tag:
-        print(f"Found previous tag: {last_tag}")
-        version_match = re.search(r"model-v(\d+)\.(\d+)\.(\d+)", last_tag)
-        if not version_match:
-            raise ValueError(f"Invalid tag format: {last_tag}")
-
-        major, minor, patch = map(int, version_match.groups())
-        patch += 1  # bump patch version
-    else:
-        print("No previous model tag found. Starting with model-v1.0.0")
-        major, minor, patch = 1, 0, 0
-
-    new_tag = f"model-v{major}.{minor}.{patch}"
-    
-    try:
-        subprocess.check_call(["git", "tag", new_tag])
-        subprocess.check_call(["git", "push", "origin", new_tag])
-        print(f"Created and pushed git tag: {new_tag}")
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to create or push git tag: {e}")
-
-    return new_tag
+    except Exception as e:
+        print(f"⚠️ Warning: Could not create/push Git tag ({e})")
+        print("This is expected in GitHub Actions if running on a PR or no write permissions.")
 
 
 def main():
@@ -98,7 +106,7 @@ def main():
 
     # MLflow run + placeholder logging (Task 3) 
     # This creates an MLflow run every time you call ⁠ python train_model.py ⁠
-    with mlflow.start_run(run_name="placeholder_training_run") as run:
+    with mlflow.start_run(run_name="placeholder_training_run") as run:  #run_name should be changed when real training is implemented
         run_id = run.info.run_id
         print(f"Running experiment: {experiment_name}")
         print(f"Running experiment: {experiment_name}")
@@ -110,30 +118,31 @@ def main():
         # Log placeholder parameters (for now)
         mlflow.log_param("data_path", str(data_path))
         mlflow.log_param("models_dir", str(models_dir))
-        mlflow.log_param("model_status", "no_model_yet")  # will change when real model is added
+        mlflow.log_param("model_status", "dummy_model")  # will change when real model is added
         mlflow.log_metric("placeholder_metric", 0.0) # Log a dummy metric (for now)
 
         # Load data from the DVC-tracked path (still just previewing)
         load_data(data_path)
 
-        model_file = models_dir / "dummy_model.txt"
-        model_file.write_text("This is a placeholder model.\n")
-
-        # Log file as MLflow artifact
-        mlflow.log_artifact(str(model_file), artifact_path="model")
+        mlflow.pyfunc.log_model(
+            artifact_path="model",
+            python_model=DummyModel()
+        )
 
         # REGISTER MODEL → Automatically creates version
 
         model_uri = f"runs:/{run_id}/model"
-        registered_model_name = "baseline_model"
+        registered_model_name = "baseline_model"  # Change the model name when the real model will be registered. baseline_model is the dummy model that we use for initialization and testing. 
 
         result = mlflow.register_model(
             model_uri=model_uri,
             name=registered_model_name,
         )
+        
+        version = result.version
 
         print(f"Registered new model version: {result.version}")
-        new_tag = create_git_tag()
+        new_tag = create_git_tag(1,version)
         print(f"Created git release tag: {new_tag}")
 
 
