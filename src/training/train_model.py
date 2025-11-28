@@ -3,6 +3,8 @@
 import yaml
 from pathlib import Path
 import mlflow
+import os
+from github import Github
 
 def load_config() -> dict:
     """
@@ -45,7 +47,7 @@ def load_data(data_path: Path):
 
         # Re-check
         if not data_path.exists():
-            raise FileNotFoundError(f"❌ Data still not found after DVC pull: {data_path}")
+            raise FileNotFoundError(f"Data still not found after DVC pull: {data_path}")
 
     # Preview first lines
     print(f"Opening data file...")
@@ -65,21 +67,31 @@ class DummyModel(mlflow.pyfunc.PythonModel):
         return ["dummy"] * len(model_input)
 
 
-def create_git_tag(version: str, subversion: str):
+def create_git_tag(version: str, repo_name: str, github_token: str):
     """
-    Creates a Git tag using the MLflow model version, e.g., 1.1, 1.2, and pushes it.
-    Works only if repo exists and user has permissions.
+    Creates a Git tag like 1.1, pushes it, and creates a GitHub release.
     """
-    # Convert MLflow version (int) to tag like 1.1, 1.2
-    tag_name = f"{version}.{subversion}"
+    tag_name = f"1.{version}"
     try:
+        # Create and push Git tag
         subprocess.run(["git", "tag", tag_name], check=True)
-        #subprocess.run(["git", "push", "--tags"], check=True)
+        subprocess.run(["git", "push", "origin", tag_name], check=True)
         print(f"Created and pushed Git tag: {tag_name}")
 
+        # Create GitHub release
+        g = Github(github_token)
+        repo = g.get_repo(repo_name)
+        repo.create_git_release(
+            tag=tag_name,
+            name=f"Release {tag_name}",
+            message="Automated release from MLflow pipeline",
+            draft=False,
+            prerelease=False,
+        )
+        print(f"Created GitHub release for tag {tag_name}")
+
     except Exception as e:
-        print(f"⚠️ Warning: Could not create/push Git tag ({e})")
-        print("This is expected in GitHub Actions if running on a PR or no write permissions.")
+        print(f"⚠️ Could not create Git tag / release: {e}")
 
 
 def main():
@@ -142,8 +154,15 @@ def main():
         version = result.version
 
         print(f"Registered new model version: {result.version}")
-        new_tag = create_git_tag(1,version)
-        print(f"Created git release tag: {new_tag}")
+
+         # Git tagging & GitHub release
+        github_token = os.environ.get("GITHUB_TOKEN")
+        repo_name = config.get("github_repo")  # "ADS2025-A2/team-A2-recsys"
+        if github_token and repo_name: # for this step, it is necessary to set a token by "export GITHUB_TOKEN", see README.md
+            create_git_tag(str(result.version), repo_name, github_token)
+        else:
+            print("Skipping Git tag / GitHub release (GITHUB_TOKEN or repo_name not set)")
+
 
 
 if __name__ == "__main__":
