@@ -1,6 +1,7 @@
 numpy
 pandas
 scikit-learn
+github
 mlflow
 dvc[s3]
 dvc[azure]
