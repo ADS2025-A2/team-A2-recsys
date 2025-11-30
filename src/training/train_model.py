@@ -105,21 +105,8 @@ def main():
     args = parser.parse_args()
     fast_mode = args.fast
 
-    if fast_mode:
-        print("===== FAST MODE ENABLED =====")
-        load_data_via_dvc(data_path)
-        print("Data is loaded via dvc. Skipping full training, evaluation, MLflow logging, and Git tagging.")
-
     config, project_root = load_config()
-
-    tracking_uri = f"file:{(project_root / 'mlruns').as_posix()}"
-    mlflow.set_tracking_uri(tracking_uri)
-    experiment_name = config.get("experiment_name", "training_runs")
-    mlflow.set_experiment(experiment_name)
-
-    print(f"MLflow tracking URI: {tracking_uri}")
-    print(f"MLflow experiment:   {experiment_name}")
-
+    
     # Paths
     paths_cfg = config.get("paths", {})
     data_rel = paths_cfg.get("data_path", "ml-10M100K/ratings.dat")
@@ -128,22 +115,26 @@ def main():
     data_path = project_root / data_rel
     models_dir.mkdir(parents=True, exist_ok=True)
 
+
     if fast_mode:
-        # Optionally, just load dataset and build model object
-        train, val, test = prepare_datasets(
-            ratings_path=str(data_path),
-            sample_size=10,  # tiny sample to test pipeline
-            seed=config["training"].get("seed", 42),
-        )
+        # just load dataset and build model object
+        load_data_via_dvc(data_path)
         recommender = SpotlightBPRRecommender()
-        print("FAST MODE: dummy dataset loaded, model instantiated")
+        print("FAST MODE: dataset loaded  via dvc, model instantiated. Skipping full training, evaluation, MLflow logging, and Git tagging.")
         return  # Skip the rest
     
+    tracking_uri = f"file:{(project_root / 'mlruns').as_posix()}"
+    mlflow.set_tracking_uri(tracking_uri)
+    experiment_name = config.get("experiment_name", "training_runs")
+    mlflow.set_experiment(experiment_name)
+
+    print(f"MLflow tracking URI: {tracking_uri}")
+    print(f"MLflow experiment:   {experiment_name}")
+
     # --------------------------------------------------------
     # Start MLflow run
     # --------------------------------------------------------
     with mlflow.start_run(run_name="spotlight_bpr_training") as run:
-
         run_id = run.info.run_id
         print(f"\n=== Starting MLflow Run: {run_id} ===")
 
