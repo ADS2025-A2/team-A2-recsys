@@ -66,16 +66,16 @@ def create_git_tag(version: str, repo_name: str, github_token: str):
     try:
         subprocess.run(["git", "tag", tag_name], check=True)
         subprocess.run(["git", "push", "origin", tag_name], check=True)
-        print(f"Created Git tag: {tag_name}")
+        print(f"✔ Created Git tag: {tag_name}")
 
         g = Github(github_token)
         repo = g.get_repo(repo_name)
         repo.create_git_release(
             tag=tag_name,
-            name=f"Model_V{tag_name}",
+            name=f"Release {tag_name}",
             message="Automated release from MLflow pipeline"
         )
-        print(f"GitHub release created for {tag_name}")
+        print(f"✔ GitHub release created for {tag_name}")
 
     except Exception as e:
         print(f"Git tagging failed: {e}")
