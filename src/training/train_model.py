@@ -8,8 +8,9 @@ import subprocess
 import re
 from github import Github
 from dvc.api import DVCFileSystem
+import argparse
 
-# ==== IMPORT YOUR DATA AND MODEL PIPELINE ====
+# ==== IMPORT DATA AND MODEL PIPELINE ====
 from load import prepare_datasets     
 from spotlight.factorization.implicit import ImplicitFactorizationModel
 from baseline_recommender import SpotlightBPRRecommender
@@ -99,6 +100,16 @@ def main():
     # --------------------------------------------------------
     # Load config + MLflow setup
     # --------------------------------------------------------
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fast", action="store_true", help="Run in fast mode (no training / registration / MLflow)")
+    args = parser.parse_args()
+    fast_mode = args.fast
+
+    if fast_mode:
+        print("===== FAST MODE ENABLED =====")
+        load_data_via_dvc(data_path)
+        print("Data is loaded via dvc. Skipping full training, evaluation, MLflow logging, and Git tagging.")
+
     config, project_root = load_config()
 
     tracking_uri = f"file:{(project_root / 'mlruns').as_posix()}"
@@ -117,9 +128,17 @@ def main():
     data_path = project_root / data_rel
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    # Ensure data is present via DVC
-    load_data_via_dvc(data_path)
-
+    if fast_mode:
+        # Optionally, just load dataset and build model object
+        train, val, test = prepare_datasets(
+            ratings_path=str(data_path),
+            sample_size=10,  # tiny sample to test pipeline
+            seed=config["training"].get("seed", 42),
+        )
+        recommender = SpotlightBPRRecommender()
+        print("FAST MODE: dummy dataset loaded, model instantiated")
+        return  # Skip the rest
+    
     # --------------------------------------------------------
     # Start MLflow run
     # --------------------------------------------------------
@@ -195,7 +214,7 @@ def main():
             name=registered_model_name,
         )
 
-        print(f"✔ Registered new model version: {result.version}")
+        print(f"Registered new model version: {result.version}")
 
         # 6) Git tagging + GitHub release
         github_token = os.environ.get("GITHUB_TOKEN")
