@@ -10,3 +10,4 @@ pytest
 flake8
 streamlit
 streamlit-cookies-manager
+torch
