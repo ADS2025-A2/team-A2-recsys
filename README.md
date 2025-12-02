@@ -20,7 +20,7 @@ Below you will find a clear explanation of the repository structure and **import
 │   ├── load.py               # Script to load models and data
 │   ├── setup.py              # Project setup logic (temporary)
 │   ├── test_app.py           # Test app script (for CI / smoke tests)
-│   ├── train.py              # Training entry point
+│   ├── train_model.py        # Training entry point
 │   └── utils.py              # Helper functions
 ├── tests/                    # Unit tests (pytest)
 ├── .dvcignore                # Ignore file for DVC
@@ -124,18 +124,13 @@ Example pitfalls:
 
 ---
 
-4. Respect the Python formatting & linting rules
-
-We enforce:
-
-* Black formatting (line length: 88)
-* Flake8 linting
+4. Respect the Python formatting 
 
 5. Do not break the CI pipelines
 
 CI checks:
 
-* linting
+* linting checks have been removed for flexibility
 * pytest
 * DVC pull checks
 * branch structure integrity
@@ -175,27 +170,9 @@ When adding or modifying files:
 * Put **all code inside `src/`**.
 * Never commit raw data or models — use **DVC**.
 * Keep file/folder names logical and consistent.
-* Run **flake8 + black + pytest** before pushing.
 * Avoid breaking import paths.
 * Don’t create new top-level folders without approval.
 * Add documentation for any new major feature.
-
-# Code Style & Linting
-
-We use Flake8 to enforce Python code quality and maintain readability. Please follow the guidelines below when developing.
-
-### Key Points for Developers 
-Line Length: 
-Maximum of 88 characters per line.
-Whitespace & Formatting:
-W503 (line break before binary operator) is ignored — follow whichever style you prefer.
-E305 (expected 2 blank lines) is ignored — minor deviations in spacing are acceptable.
-Imports:
-F401 (imported but unused) is ignored. Be mindful not to leave unnecessary imports in production code.
-Code Complexity:
-Functions or methods should not exceed complexity of 10. Refactor complex functions into smaller ones.
-Exclusions:
-Flake8 will not check files in .git, __pycache__, docs, venv, build, dist, mlruns, or .dvc.
 
 # Data Loading
 
@@ -209,6 +186,71 @@ Then run the training script from the project root:
 python train_model.py
 ```
 
+# Training Pipeline –  train_model.py
+
+The script *train_model.py* implements the full training pipeline for a baseline BPR recommender using the Spotlight library. It integrates data loading, model training, evaluation, MLflow tracking, DVC-based dataset management, and automated versioning with Git and GitHub Releases.
+
+## 1. What the Script Does
+   
+### Data Loading
+Loads configuration from src/config/config.yaml.
+Ensures dataset availability. If the raw dataset is missing, it is automatically pulled using DVC.
+Calls prepare_datasets() from load.py, which:
+- Reads the ratings dataset.
+- Performs optional subsampling.
+Splits data into train, validation, and test sets.
+
+### Model Training
+Builds a SpotlightBPRRecommender with default hyperparameters.
+Logs these parameters to MLflow.
+Trains a BPR matrix factorization model on implicit feedback data.
+
+### Evaluation
+Computes and logs the following metrics to MLflow:
+- MRR (Mean Reciprocal Rank)
+- Precision@10
+- Recall@10
+  
+### Model Registration:
+Saves the trained model as an artifact.
+Registers it inside MLflow as a new model version.
+
+### Git Tagging and GitHub Release
+-If a GitHub token is available:
+Creates a Git tag using the MLflow version number (format: 1.<version>).
+Automatically creates a GitHub Release for the tag.
+
+
+## 2. How to Run the Training Script
+From the project root:
+* python src/training/train_model_test.py
+Requirements:
+-DVC installed and configured (for pulling dataset).
+-MLflow installed.
+-Git configured with write access to your repository.
+-config.yaml properly set up, including model registry and paths.
+
+## 3. Setting Up a GitHub Token
+To enable automatic tagging and releasing, developers must create a Personal Access Token on GitHub.
+Steps:
+1) Go to GitHub → Settings → Developer Settings → Personal Access Tokens.
+2) Create a classic token with the following scopes: repo (for creating releases).
+3) Copy the token.
+4) Add it to your environment variables:
+macOS / Linux:  export GITHUB_TOKEN="your_token_here"
+Windows:        setx GITHUB_TOKEN "your_token_here"
+
+## 4. Versioning Logic
+### MLflow Model Versioning
+Each time the model is trained and registered, MLflow assigns an incremental version number:
+Model Version 1
+Model Version 2
+Model Version 3
+
+### Git Tag Naming Convention
+The script converts the MLflow version into a Git tag using *1.<version>* (for initialization process, 1 is used. This will change over time). 
+This ensures consistent alignment between MLflow model registry versions and Git repository releases.
+If Git tagging is successful, a GitHub Release is created automatically for that version.
 
 # Continuous Integration (CI) Pipeline
 

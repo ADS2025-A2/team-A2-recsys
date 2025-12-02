@@ -50,8 +50,7 @@ def load_ratings(path: str) -> pd.DataFrame:
     return df
 
 
-def build_interactions(df: pd.DataFrame) -> Interactions:
-    """Convert a ratings DataFrame into a Spotlight Interactions object."""
+def build_interactions(df, return_mappings: bool = False):
     # Factorize gives integer-coded ids and mapping arrays
     user_ids, user_unique = pd.factorize(df["user_id"])
     item_ids, item_unique = pd.factorize(df["item_id"])
@@ -69,6 +68,10 @@ def build_interactions(df: pd.DataFrame) -> Interactions:
         num_users=len(user_unique),
         num_items=len(item_unique),
     )
+
+    if return_mappings:
+        # user_unique and item_unique are arrays of original IDs
+        return interactions, user_unique, item_unique
 
     return interactions
 
