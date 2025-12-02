@@ -14,9 +14,19 @@ def star_rating(rating, max_stars=5):
     return stars
 
 def show_info(movie):
-    full_title = movie[0]
-    title, year = full_title.rsplit(" (", 1)
-    year = year.replace(")", "")
+    if isinstance(movie, dict):
+        full_title = movie["title"]
+    elif isinstance(movie, list):
+        full_title = movie[0]  
+    else:
+        full_title = movie 
+
+    if " (" in full_title:
+        title, year = full_title.rsplit(" (", 1)
+        year = year.replace(")", "")
+    else:
+        title = full_title
+        year = "Unknown"
     duration = get_movie_runtime(title, year)
 
     col1, col2 = st.columns(2)
@@ -78,7 +88,8 @@ options = st.session_state.df["title"]
 selected = st.multiselect("Search for a movie:", options)
 
 if selected:
-    show_info(selected)
+    for movie_title in selected:
+        show_info(movie_title)
 
 if st.session_state.selected_movie:
     show_info(st.session_state.selected_movie)

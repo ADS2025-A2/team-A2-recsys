@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 from database import init_db, verify_login, register_user
 from model.recommendations import DUMMY_RECOMMENDATIONS
+import os
 
 # ========================
 # INIT DATABASE
@@ -32,7 +33,7 @@ if "username" not in st.session_state:
 if "mode" not in st.session_state:
     st.session_state.mode = "login"
 
-# Leer cookies
+# Read cookies
 cookie_username = cookies.get("username")
 cookie_expiry = cookies.get("expiry")
 
@@ -115,9 +116,10 @@ try:
     st.session_state.df["genres"] = st.session_state.df["genres"].str.replace("|", ", ")
 
     if "avg_ratings" not in st.session_state:
-        st.session_state.avg_ratings = pd.read_csv(
-            "avg_rating_per_movie.csv"
-        )
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        path= os.path.join(BASE_DIR,"..", "..", "data", "processed", "avg_rating_per_movie.csv")
+        st.session_state.avg_ratings = pd.read_csv(path)
+        
 
 except Exception as e:
     st.error(f"No se pudo cargar la información: {e}")
@@ -130,11 +132,31 @@ st.subheader("🔥 Recommended Movies For You")
 username = st.session_state.username
 
 # Convert username to a numeric id for testing dummy recommendations
-# Simple example: hash the username and mod by 10, then +1 to get id 1-10
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 user_id = (abs(hash(username)) % 10) + 1
-recommended_movies = DUMMY_RECOMMENDATIONS.get(user_id, [])
+csv_path = os.path.join(BASE_DIR,"..", "training", "top10_recommendations_with_titles.csv")
+try:
+    rec_df = pd.read_csv(csv_path)
+    user_recs = rec_df[rec_df['user_id'] == user_id]
+    recommended_movies = []
+    if not user_recs.empty:
+        titles = user_recs.iloc[0, 1:].dropna().tolist()  
+        for title in titles:
+            movie_row = st.session_state.df[st.session_state.df['title'] == title]
+            if not movie_row.empty:
+                recommended_movies.append({
+                    "title": title,
+                    "genre": movie_row.iloc[0]["genres"]
+                })
+            else:
+                recommended_movies.append({
+                    "title": title,
+                    "genre": "Unknown"
+                })
+except Exception as e:
+    st.error(f"No se pudo cargar las recomendaciones: {e}")
+    recommended_movies = []
 
-# Mostrar recomendaciones en grid de 3 columnas
 if recommended_movies:
     cols = st.columns(3)
     for idx, movie in enumerate(recommended_movies):
