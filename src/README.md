@@ -94,7 +94,7 @@ Important: The backend expects the MovieLens 10M dataset, make sure the files ar
 data/processed/ml-10M100K/
 ```
 
-Must include at least: `movies.dat`, `ratings.dat`, `users.dat`.
+Must include at least: `movies.dat`, `ratings.dat`, `tags.dat`.
 
 ---
 
