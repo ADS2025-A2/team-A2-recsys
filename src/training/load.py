@@ -24,7 +24,7 @@ from spotlight.factorization.implicit import ImplicitFactorizationModel
 
 ROOT = Path(__file__).resolve().parents[2]
 
-RATINGS_PATH = ROOT / "ml-10M100K" / "ratings.dat"
+RATINGS_PATH = ROOT / "data" / "processed" / "ml-10M100K" / "ratings_clean.dat"
 
 
 def load_ratings(path: str) -> pd.DataFrame:
