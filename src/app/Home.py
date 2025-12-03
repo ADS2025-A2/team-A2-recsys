@@ -131,12 +131,12 @@ st.subheader("🔥 Recommended Movies For You")
 
 username = st.session_state.username
 
-# Convert username to a numeric id for testing dummy recommendations
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-user_id = (abs(hash(username)) % 10) + 1
+user_id = user_id = int(username)
 csv_path = os.path.join(BASE_DIR,"..", "training", "top10_recommendations_with_titles.csv")
 try:
     rec_df = pd.read_csv(csv_path)
+    user_id = int(username)
     user_recs = rec_df[rec_df['user_id'] == user_id]
     recommended_movies = []
     if not user_recs.empty:
