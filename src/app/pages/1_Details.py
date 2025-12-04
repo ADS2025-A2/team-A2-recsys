@@ -1,6 +1,16 @@
 import streamlit as st
 import pandas as pd
 from api import get_movie_poster, get_movie_summary, get_movie_cast, get_movie_runtime
+from streamlit_star_rating import st_star_rating
+from database import save_rating, get_rating, add_to_watchlist, get_initial
+
+# Check if user is logged in
+if "authenticated" not in st.session_state or not st.session_state.authenticated:
+    st.switch_page("Home.py")
+
+# Check if initial movies have been rated
+if get_initial(st.session_state.username) == 0:
+    st.switch_page("Home.py")
 
 def star_rating(rating, max_stars=5):
     full_star = "★"
@@ -61,6 +71,19 @@ def show_info(movie):
                 "<p style='font-size:16px; color:#111; margin:0;'>Average Rating: N/A</p>",
                 unsafe_allow_html=True
             )
+        
+        previous_rating = get_rating(st.session_state.username, title)
+        rating = st_star_rating("Your Rating:", maxValue=5, defaultValue=previous_rating, key=f"rating_{movie}")
+        if st.button("Save Rating", key=f"Save_rating_{movie}"):
+            if title and rating > 0:
+                save_rating(st.session_state.username, title, rating)
+                st.success("Rating saved!")
+            else:
+                st.warning("Please select a rating to save.")
+        
+        if st.button("Add to Watchlist", key=f"watchlist_{movie}"):
+            add_to_watchlist(st.session_state.username, title, year)
+            st.success(f"{title} added to watchlist!")
 
     with col2:
         with st.spinner("Loading movie poster..."):
@@ -69,17 +92,13 @@ def show_info(movie):
             cast = get_movie_cast(title, year)
 
         if poster_url:
-            st.image(poster_url, width=200)
+            st.image(poster_url, width=250)
         else:
             st.warning("Movie poster not found.")
         
     st.write(summary)
     st.write("**Top Cast:**", ", ".join(cast))
     
-
-
-if "authenticated" not in st.session_state or not st.session_state.authenticated:
-    st.switch_page("Home.py")
 
 st.title("Movie Details")
 

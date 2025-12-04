@@ -3,9 +3,11 @@ from streamlit_cookies_manager import EncryptedCookieManager
 from datetime import datetime, timedelta
 import pandas as pd
 import requests
-from database import init_db, verify_login, register_user
+from database import init_db, verify_login, register_user, save_rating, get_rating, get_initial, set_initial_true
 from model.recommendations import DUMMY_RECOMMENDATIONS
 import os
+from api import get_movie_poster
+from streamlit_star_rating import st_star_rating
 
 # ========================
 # INIT DATABASE
@@ -99,8 +101,51 @@ if not st.session_state.authenticated:
     st.stop()
 
 # ========================
+# INITIAL RATINGS NEW USER
+# ========================
+
+def askInitialRating(movie, year):
+    poster_url = get_movie_poster(movie, year)
+    st.image(poster_url, width=150)
+    previous_rating = get_rating(st.session_state.username, movie)
+    rating = st_star_rating("Your Rating:", maxValue=5, defaultValue=previous_rating, key=f"rating_{movie}")
+    return rating
+
+
+if get_initial(st.session_state.username) == 0:
+    st.markdown(
+        "<p style='font-size:22px; color:#111; margin:0;'>Please rate these 5 movies before continuing.</p>",
+        unsafe_allow_html=True
+    )
+
+    initial_movies = ["Toy Story", "Star Wars: Episode I - The Phantom Menace", "Groundhog Day", "Pulp Fiction", "Grease"]
+    initial_years = [1995, 1999, 1993, 1994, 1978]
+
+    ratings = {}
+    for movie in initial_movies:
+        ratings[movie] = 0
+
+    columns = st.columns(5)
+    for i, (col, movie, year) in enumerate(zip(columns, initial_movies, initial_years)):
+        with col:
+            rating = askInitialRating(movie, year)
+            ratings[movie] = rating
+    
+    if st.button("Save Ratings"):
+        if all(r >= 1 for r in ratings.values()):
+            for movie in initial_movies:
+                save_rating(st.session_state.username, movie, ratings[movie])
+            set_initial_true(st.session_state.username)
+            st.rerun()
+        else:
+            st.warning("Please rate all 5 movies before continuing")               
+
+    st.stop()
+
+# ========================
 # MAIN PAGE — USER LOGGED IN
 # ========================
+
 st.title("🎬 Movie Recommendations")
 
 # ========================

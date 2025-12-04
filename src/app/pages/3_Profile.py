@@ -3,10 +3,14 @@ from streamlit_cookies_manager import EncryptedCookieManager
 import json
 import os
 import pandas as pd
-from database import get_preferences, save_preferences
+from database import get_preferences, save_preferences, get_initial
 
 # --- check login ---
 if "authenticated" not in st.session_state or not st.session_state.authenticated:
+    st.switch_page("Home.py")
+
+# --- Check if initial movies have been rated ---
+if get_initial(st.session_state.username) == 0:
     st.switch_page("Home.py")
 
 cookies = EncryptedCookieManager(
