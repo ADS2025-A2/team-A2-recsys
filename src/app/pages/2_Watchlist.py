@@ -1,6 +1,7 @@
 import streamlit as st
 from database import get_initial, get_watchlist, remove_from_watchlist
 from api import get_movie_poster
+from Home import fix_title
 
 # Check if user is logged in
 if "authenticated" not in st.session_state or not st.session_state.authenticated:
@@ -12,14 +13,19 @@ if get_initial(st.session_state.username) == 0:
 
 st.title("Watchlist")
 
+options = st.session_state.df["title"]
+st.session_state.selected_movie = st.multiselect("Search for a movie:", options)
+
+if st.session_state.selected_movie:
+    st.switch_page("pages/1_Details.py")
+
 watchlist = get_watchlist(st.session_state.username)
-st.write(watchlist)
 
 for title, year in watchlist:
     col1, col2 = st.columns([2,1])
     with st.container():
         with col1:
-            st.subheader(title)
+            st.subheader(fix_title(title))
             if st.button("Info", key=f"info_{title}"):
                 st.switch_page("pages/1_Details.py")
             if st.button("Remove from Watchlist", key=f"remove_{title}"):

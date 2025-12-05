@@ -3,6 +3,7 @@ import pandas as pd
 from api import get_movie_poster, get_movie_summary, get_movie_cast, get_movie_runtime
 from streamlit_star_rating import st_star_rating
 from database import save_rating, get_rating, add_to_watchlist, get_initial
+from Home import fix_title
 
 # Check if user is logged in
 if "authenticated" not in st.session_state or not st.session_state.authenticated:
@@ -15,11 +16,8 @@ if get_initial(st.session_state.username) == 0:
 def star_rating(rating, max_stars=5):
     full_star = "★"
     empty_star = "☆"
-    half_star = "⯨"
 
-    stars = full_star * int(rating)
-    if rating - int(rating) >= 0.5:
-        stars += half_star
+    stars = full_star * round(rating)
     stars += empty_star * (max_stars - len(stars))
     return stars
 
@@ -41,7 +39,7 @@ def show_info(movie):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader(title)
+        st.subheader(fix_title(title))
         selected_genre = st.session_state.df.loc[st.session_state.df["title"] == full_title, "genres"].values[0]
         st.markdown(
                 f"<p style='font-size:20px; color:#111; margin:0;'>Genre: {selected_genre}</p>",
@@ -104,14 +102,11 @@ st.title("Movie Details")
 
 st.session_state.select = []
 options = st.session_state.df["title"]
-selected = st.multiselect("Search for a movie:", options)
+selected = st.multiselect("Search for a movie:", options, default=st.session_state.selected_movie)
 
 if selected:
     for movie_title in selected:
         show_info(movie_title)
-
-if st.session_state.selected_movie:
-    show_info(st.session_state.selected_movie)
-    st.session_state.selected_movie = None
+    
 
 

@@ -3,7 +3,7 @@ from streamlit_cookies_manager import EncryptedCookieManager
 from datetime import datetime, timedelta
 import pandas as pd
 import requests
-from database import init_db, verify_login, register_user, save_rating, get_rating, get_initial, set_initial_true
+from database import init_db, verify_login, register_user, save_rating, get_rating, get_initial, set_initial_true, add_to_watchlist
 from model.recommendations import DUMMY_RECOMMENDATIONS
 import os
 from api import get_movie_poster
@@ -148,6 +148,15 @@ if get_initial(st.session_state.username) == 0:
 
 st.title("🎬 Movie Recommendations")
 
+def fix_title(title):
+    articles = ["The", "A", "An"]
+    for article in articles:
+        suffix = f", {article}"
+        if title.endswith(suffix):
+            title = f"{article} {title[:-len(suffix)]}"
+            break
+    return title
+
 # ========================
 # MOVIE CATALOG
 # ========================
@@ -177,11 +186,10 @@ st.subheader("🔥 Recommended Movies For You")
 username = st.session_state.username
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-user_id = user_id = int(username)
 csv_path = os.path.join(BASE_DIR,"..", "training", "top10_recommendations_with_titles.csv")
 try:
     rec_df = pd.read_csv(csv_path)
-    user_id = int(username)
+    user_id = username
     user_recs = rec_df[rec_df['user_id'] == user_id]
     recommended_movies = []
     if not user_recs.empty:
@@ -205,22 +213,30 @@ except Exception as e:
 if recommended_movies:
     cols = st.columns(3)
     for idx, movie in enumerate(recommended_movies):
+        title, year = movie["title"].rsplit(" (", 1)
+        year = year.replace(")", "")
         with cols[idx % 3]:
             with st.form(key=f"movie_form_{idx}"):
                 st.markdown(
                     f"""
                     <div style='padding: 10px; border: 1px solid #ddd; 
                                 border-radius: 10px; margin-bottom: 15px;'>
-                        <h4 style='margin-bottom: 5px;'>{movie['title']}</h4>
+                        <h4 style='margin-bottom: 5px;'>{fix_title(title)}</h4>
                         <p style='color: gray;'>🎭 {movie['genre']}</p>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-                submitted = st.form_submit_button("Info")
-                if submitted:
-                    st.session_state.selected_movie = movie
-                    st.switch_page("pages/1_Details.py")
+                col1, col2 = st.columns(2)
+                with col1:
+                    submitted = st.form_submit_button("Info", key=f"info_{movie}")
+                    if submitted:
+                        st.session_state.selected_movie = movie["title"]
+                        st.switch_page("pages/1_Details.py")
+                with col2:
+                    if st.form_submit_button("Add to Watchlist", key=f"watchlist_{movie}"):
+                        add_to_watchlist(st.session_state.username, title, year)
+                        st.success(f"{title} added to watchlist!")
 else:
     st.info("No recommendations available for this user.")
 

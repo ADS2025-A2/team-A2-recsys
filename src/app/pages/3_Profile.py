@@ -42,8 +42,11 @@ with col1:
         max_selections=5)
 
     if st.button("Save Preferences"):
-        save_preferences(username, selected)
-        st.success("Preferences saved!")
+        if selected:
+            save_preferences(username, selected)
+            st.success("Preferences saved!")
+        else:
+            st.warning("Please choose at least one genre before saving.")
 
 with col2:
     if st.button("Log out"):
