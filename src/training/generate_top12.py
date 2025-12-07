@@ -129,7 +129,7 @@ def main():
         axis=1,
     )
 
-    out_path = models_dir / "top10_recommendations_with_titles.csv"
+    out_path = models_dir / "top12_recommendations_with_titles.csv"
     result_df.to_csv(out_path, index=False, encoding="utf-8")
     print(f"\n✔ Saved recommendations with titles to {out_path}")
 
