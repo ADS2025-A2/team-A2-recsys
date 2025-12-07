@@ -57,13 +57,13 @@ def load_trained_recommender(model_path: Path) -> SpotlightBPRRecommender:
     return recommender
 
 
-K = 10  # global K for convenience
+K = 12  # global K for convenience
 
 
 def main():
     project_root = Path(__file__).resolve().parents[2]
-    data_path = project_root / "data" / "raw" / "ml-10M100K" / "ratings.dat"
-    movies_path = project_root / "data" / "raw" / "ml-10M100K" / "movies.dat"
+    data_path = project_root / "data" / "processed" / "ml-10M100K" / "ratings_clean.dat"
+    movies_path = project_root / "data" / "processed" / "ml-10M100K" / "movies.dat"
     models_dir = project_root / "models"
     models_dir.mkdir(exist_ok=True)
 
