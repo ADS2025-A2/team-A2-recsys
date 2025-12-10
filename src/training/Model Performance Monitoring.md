@@ -35,7 +35,7 @@ Metrics are logged on every training run in MLflow:
 | Step            | Metric                                        |
 | --------------- | --------------------------------------------- |
 | Validation step | `val_mrr`                                     |
-| Test step       | `test_mrr`, `precision_at_10`, `recall_at_10` |
+| Test step       | `test_mrr`, `precision_10`, `recall_10` |
 | Run metadata    | hyperparameters, dataset sizes                |
 
 ---
@@ -60,20 +60,7 @@ If any single metric falls **below threshold for 2 consecutive runs**, retrainin
 
 ---
 
-## **2.2. Relative Degradation Thresholds**
-
-Retraining is triggered when a metric drops significantly compared to a stable baseline:
-
-| Condition                                                           | Trigger |
-| ------------------------------------------------------------------- | ------- |
-| **MRR decreases by more than 10%** from the previous stable version | Retrain |
-| **Precision@10 or Recall@10 decreases by more than 15%**            | Retrain |
-
-This protects against gradual model drift.
-
----
-
-## **2.3. User Data Drift Triggers**
+## **2.2. User Data Drift Triggers**
 
 | User Drift Event                                                     | Trigger |
 | -------------------------------------------------------------------- | ------- |
