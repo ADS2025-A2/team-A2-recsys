@@ -1,16 +1,22 @@
 import os
+from typing import Any, Dict, Optional
+
 import numpy as np
+from spotlight.factorization.implicit import ImplicitFactorizationModel
 
 # Fix macOS MKL/OMP issues
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["OMP_NUM_THREADS"] = "1"
 
-from spotlight.factorization.implicit import ImplicitFactorizationModel
-
 
 class SpotlightAdaptiveRecommender:
     """
     Implicit matrix factorization using Spotlight's adaptive hinge loss.
+
+    Designed with a simple interface so the training script can do:
+
+        model = SpotlightAdaptiveRecommender(**hyperparams)
+        model.fit(train_interactions, verbose=True)
     """
 
     def __init__(
@@ -22,10 +28,10 @@ class SpotlightAdaptiveRecommender:
         l2: float = 1e-6,
         num_negative_samples: int = 3,
         use_cuda: bool = False,
-        random_state=None,
-    ):
-        # Store hyperparameters for MLflow logging
-        self.params = {
+        random_state: Optional[np.random.RandomState] = None,
+    ) -> None:
+        # Store hyperparameters for MLflow logging / inspection
+        self.params: Dict[str, Any] = {
             "model_type": "adaptive_hinge_mf",
             "embedding_dim": embedding_dim,
             "n_iter": n_iter,
@@ -50,27 +56,44 @@ class SpotlightAdaptiveRecommender:
             random_state=random_state,
         )
 
-    def fit(self, train_interactions):
-        """Train the model."""
-        self.model.fit(train_interactions, verbose=True)
+    def fit(self, train_interactions, **fit_kwargs) -> "SpotlightAdaptiveRecommender":
+        """
+        Train the model.
+
+        Parameters
+        ----------
+        train_interactions :
+            Spotlight Interactions object used for training.
+        **fit_kwargs :
+            Extra keyword args forwarded to `ImplicitFactorizationModel.fit`,
+            e.g. verbose=True.
+
+        Returns
+        -------
+        self
+        """
+        self.model.fit(train_interactions, **fit_kwargs)
         return self
 
-    def predict(self, user_id):
+    def predict(self, user_id: int):
         """Predict scores for ALL items for a single user."""
         num_items = self.model._num_items
-        item_ids = np.arange(num_items)
+        item_ids = np.arange(num_items, dtype=np.int32)
         return self.model.predict(user_id, item_ids)
 
-    def predict_for_user(self, user_id, item_ids=None):
+    def predict_for_user(self, user_id: int, item_ids=None):
         """Predict for a specific set of item IDs (or all if None)."""
         return self.model.predict(user_id, item_ids=item_ids)
 
 
 if __name__ == "__main__":
     # Small functional test
-    from load import prepare_datasets
-
     print("\n=== Running Spotlight Adaptive MF test ===")
+
+    try:
+        from .load import prepare_datasets  # package-style import
+    except ImportError:
+        from load import prepare_datasets  # fallback for direct script execution
 
     train, val, test = prepare_datasets(sample_size=10_000)
 
@@ -84,9 +107,9 @@ if __name__ == "__main__":
     )
 
     print("\nTraining test model...")
-    model.fit(train)
+    model.fit(train, verbose=True)
 
-    test_user_id = train.user_ids[0]
+    test_user_id = int(train.user_ids[0])
     print(f"\nPredicting for user {test_user_id}...")
     scores = model.predict_for_user(test_user_id)
 

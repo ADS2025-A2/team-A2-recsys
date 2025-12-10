@@ -10,3 +10,29 @@ training:
   test_size: 0.2
 
 github_repo: "ADS2025-A2/team-A2-recsys"
+
+
+models:
+  bpr:
+    class_name: "SpotlightBPRRecommender"
+    params: 
+      embedding_dim: 32
+      n_iter: 10
+      batch_size: 2048
+      learning_rate: 0.001
+      l2: 1e-6
+      num_negative_samples: 3
+      use_cuda: false
+
+  adaptive:
+    class_name: "SpotlightAdaptiveRecommender"
+    params:
+      embedding_dim: 16
+      n_iter: 10
+      batch_size: 2048
+      learning_rate: 0.005
+      l2: 1e-6
+      num_negative_samples: 5
+      use_cuda: false
+
+primary_model_key: "bpr"
