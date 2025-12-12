@@ -51,7 +51,7 @@ Retraining is required to ensure that the recommendation model remains accurate 
 ### **2.1. User Growth-Based Triggers
 
 **New users threshold:**
-* Trigger retraining when the number of new frontend users since the last training run exceeds a defined percentage of total users (e.g., 10–20%).
+* Trigger retraining when the number of new frontend users since the last training run exceeds a defined percentage of total users (10%).
 
 **Ratings accumulation:**
 * Retrain when the average number of ratings per user increases significantly, e.g., when the new batch of users have submitted ≥5–10 ratings each.
