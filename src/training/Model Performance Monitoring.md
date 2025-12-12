@@ -8,25 +8,30 @@ The goal is to ensure that recommendations stay relevant as user-level interacti
 
 ## **1. Key Metrics**
 
-We monitor **ranking-based recommendation metrics**, computed during the training pipeline:
+We monitor **ranking-based recommendation metrics**, computed on frontend users who have completed initial ratings.
 
 ### **1.1. Mean Reciprocal Rank (MRR)**
 
 **Definition:**
-MRR measures how highly the model ranks the first relevant item.
-**Interpretation:** Higher = better. Sensitive to early-ranking errors.
+MRR measures the rank of the first relevant item in the recommended list for a user.
+**Interpretation:** Higher MRR indicates that relevant items appear early in the recommendation list. This metric is robust even for users with few ratings.
+Current threshold: 0.02
 
 ### **1.2. Precision@K**
 
 **Definition:**
-Percentage of the top-K recommendations that are relevant.
-**Interpretation:** Measures recommendation *quality*.
+Percentage of the top-10 recommended items that are relevant to the user.
+**Interpretation:** 
+Reflects recommendation accuracy. For frontend users with few ratings, a lower threshold is expected due to the cold-start problem.
+Current threshold for frontend users: 0.03 (can be increased as users provide more ratings).
 
 ### **1.3. Recall@K**
 
 **Definition:**
 Percentage of relevant items that appear in the top-K recommendations.
-**Interpretation:** Measures *coverage* of the user’s interests.
+**Interpretation:** 
+Reflects coverage of the user’s preferences.
+Current threshold for frontend users: 0.03 (can be increased as users provide more ratings).
 
 ### **1.4. Offline Monitoring Frequency**
 
@@ -34,7 +39,6 @@ Metrics are logged on every training run in MLflow:
 
 | Step            | Metric                                        |
 | --------------- | --------------------------------------------- |
-| Validation step | `val_mrr`                                     |
 | Test step       | `test_mrr`, `precision_10`, `recall_10` |
 | Run metadata    | hyperparameters, dataset sizes                |
 
@@ -42,34 +46,29 @@ Metrics are logged on every training run in MLflow:
 
 # **2. Thresholds for Model Retraining**
 
-The model should be **automatically retrained** when one or more of the following degradation criteria is met:
+Retraining is required to ensure that the recommendation model remains accurate and relevant, especially as new users and interactions are added. The triggers are based on user activity, model performance, and drift detection.
 
----
+### **2.1. User Growth-Based Triggers
 
-## **2.1. Absolute Performance Thresholds**
+**New users threshold:**
+* Trigger retraining when the number of new frontend users since the last training run exceeds a defined percentage of total users (e.g., 10–20%).
 
-These are minimum acceptable metric values based on baseline performance from the initial model training.
+**Ratings accumulation:**
+* Retrain when the average number of ratings per user increases significantly, e.g., when the new batch of users have submitted ≥5–10 ratings each.
 
-| Metric           | Minimum Threshold | Rationale                                              |
-| ---------------- | ----------------- | ------------------------------------------------------ |
-| **Test MRR**     | **≥ 0.075**       | MRR is sensitive to ranking errors — ensures relevance |
-| **Precision@10** | **≥ 0.085**       | Avoid recommending irrelevant movies                   |
-| **Recall@10**    | **≥ 0.050**       | Ensure coverage of user interests                      |
+### **2.2. Metric-Based Triggers
 
-If any single metric falls **below threshold for 2 consecutive runs**, retraining is triggered.
+**Cold-start metrics decline:**
+* Trigger retraining if MRR, Precision@10, or Recall@10 for new users fall below predefined thresholds for consecutive evaluation periods.
+Example: Precision@10 < 0.03 or Recall@10 < 0.03 for 3 evaluation runs in a row.
 
----
+**Overall performance drift:**
+* Track metrics across all frontend users.
+Significant decline (e.g., >10% drop in MRR) triggers retraining.
+Detects trends such as changes in user behavior or new popular movies.
 
-## **2.2. User Data Drift Triggers**
-
-| User Drift Event                                                     | Trigger |
-| -------------------------------------------------------------------- | ------- |
-| **+20% new ratings** since last retraining                           | retrain |
-| **+10% new users** added                                             | retrain |
-| **>15% changes in watchlist patterns** (e.g., trending genres shift) | retrain |
-| **Data quality anomaly** (missing/invalid rating spikes)             | retrain |
-
----
+### **2.3. Frequency-Based Triggers
+* Schedule regular retraining (biweekly) even if thresholds are not crossed, to incorporate accumulated feedback.
 
 # **3. Runtime Trigger for a Single-User Recommendation Refresh**
 

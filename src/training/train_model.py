@@ -362,8 +362,7 @@ def main():
             # 9) Git tagging + GitHub release (only for primary model)
             github_token = os.environ.get("GITHUB_TOKEN")
             repo_name = config.get(
-                "github_repo",
-                "ADS2025-A2/team-A2-recsys",
+                "github_repo"
             )
 
             if model_key == primary_model_key:
