@@ -1,7 +1,7 @@
 experiment_name: "baseline_model"
 
 paths:
-  data_path: "data/raw/ml-10M100K/ratings.dat"   # DVC-tracked file
+  data_path: "data/processed/ml-10M100K/ratings_clean.dat"   # DVC-tracked file
   models_dir: "models"
   logs_dir: "logs"                      # optional, in case you want it later
 

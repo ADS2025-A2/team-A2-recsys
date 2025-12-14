@@ -14,6 +14,9 @@ import yaml
 import pandas as pd
 
 from load import load_ratings, build_interactions
+from load import prepare_datasets
+from load import load_full_dataframe, build_interactions
+
 from baseline_recommender import SpotlightBPRRecommender
 
 
@@ -62,27 +65,46 @@ K = 12  # global K for convenience
 
 def main():
     project_root = Path(__file__).resolve().parents[2]
-    data_path = project_root / "data" / "processed" / "ml-10M100K" / "ratings_clean.dat"
+    #data_path = project_root / "data" / "processed" / "ml-10M100K" / "ratings_clean.dat"
     movies_path = project_root / "data" / "processed" / "ml-10M100K" / "movies.dat"
     models_dir = project_root / "models"
     models_dir.mkdir(exist_ok=True)
 
     # 1) Load ratings & interactions (with mappings)
-    print(f"Loading ratings from {data_path} ...")
-    df = load_ratings(str(data_path))
-    interactions, user_mapping, item_mapping = build_interactions(
-        df, return_mappings=True
-    )
+    ##print(f"Loading ratings from {data_path} ...")
+    #df = load_ratings(str(data_path))
+    #interactions, user_mapping, item_mapping = build_interactions(
+    #    df, return_mappings=True
+    #)
+    print("Loading ratings (MovieLens + frontend DB) ...")
+    df = load_full_dataframe(include_frontend=True)
 
-    num_users = interactions.num_users
-    num_items = interactions.num_items
-    print(f"Dataset has {num_users} users and {num_items} items.")
+    interactions, user_mapping, item_mapping = build_interactions(
+    df, return_mappings=True
+)
+
+
+
+    #num_users = interactions.num_users
+    #num_items = interactions.num_items
+    # IMPORTANT: model defines valid internal user/item id range
+    #print(f"Dataset has {num_users} users and {num_items} items.")
+
 
     # 2) Load trained model
-    model_path = models_dir / "baseline_recommender.pt"
+    model_path = models_dir / "bpr_recommender.pt"
     print(f"Loading trained model from {model_path} ...")
     recommender: SpotlightBPRRecommender = torch.load(model_path, map_location="cpu")
     model = recommender.model
+
+    num_users = model._num_users
+    num_items = model._num_items
+    print(f"Dataset has {num_users} users and {num_items} items.")
+
+    print("interactions.num_users:", interactions.num_users)
+    print("model users:", model._num_users)
+    print("interactions.num_items:", interactions.num_items)
+    print("model items:", model._num_items)    
 
     # 3) Compute top-K internal item IDs per user (user-by-user, no batching)
     print("Computing top-K recommendations for all users (looping over users) ...")
