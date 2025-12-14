@@ -8,23 +8,19 @@ import streamlit as st
 st.markdown(
     """
     <style>
-    /* Fondo de toda la app */
     .stApp, .css-18e3th9, .css-1outpf7, .css-ffhzg2 {
         background-color: #111;
         color: white;
     }
 
-    /* Títulos */
     h1, h2, h3, h4, h5, h6 {
         color: white;
     }
 
-    /* Texto normal */
     p, span, label {
         color: white;
     }
 
-    /* Botones */
     div.stButton > button {
         background-color: #111111 !important;
         color: #111111 !important;
@@ -46,53 +42,51 @@ st.markdown(
 
 st.markdown("""
 <style>
-/* Fondo negro del sidebar */
+
 [data-testid="stSidebar"] {
     background-color: #111111 !important;
     
 }
 
-/* Items del menú (Home, Details, Watchlist, Profile) */
+
 [data-testid="stSidebarNav"] span {
-    color: #FFFFFF !important;         /* texto blanco */
+    color: #FFFFFF !important;      
     font-weight: none;
     font-size: 16px !important;
 }
 
-/* Item seleccionado */
+
 [data-testid="stSidebarNav"] .css-1fv8s86 {
-    color: #d72a18 !important;         /* item activo rojo estilo Netflix */
+    color: #d72a18 !important;         
 }
 
-/* Hover sobre los items */
+
 [data-testid="stSidebarNav"] span:hover {
     color: #fff !important;
     cursor: pointer;
 }
 
-/* Ajuste de padding interno para que se vea ordenado */
+
 [data-testid="stSidebarNav"] {
     padding-top: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Estilo para botones específicos con fondo rojo, texto negro y alineación
 st.markdown(
     """
     <style>
-    /* Estilo para todos los botones */
     div.stButton > button {
-        background-color: #d72a18 !important;  /* fondo rojo */
-        color: black !important;               /* texto negro */
+        background-color: #d72a18 !important;  
+        color: black !important;             
         font-weight: bold;
         border-radius: 8px;
         padding: 8px 16px;
-        text-align: center;                    /* centrar texto */
+        text-align: center;                  
     }
 
     div.stButton > button:hover {
-        background-color: #e65b4f !important;  /* rojo más claro al pasar el mouse */
+        background-color: #e65b4f !important;  
     }
     </style>
     """,
@@ -112,9 +106,9 @@ if get_initial(st.session_state.username) == 0:
 st.markdown(
     """
     <h1 style='
-        color: #d72a18;   /* color rojo */
-        text-align: center; /* centrado */
-        font-size: 60px;   /* tamaño más grande */
+        color: #d72a18;  
+        text-align: center; 
+        font-size: 60px;   
         font-family: Arial, sans-serif;
     '>
         Watchlist
@@ -132,7 +126,6 @@ st.markdown(
 st.markdown(
     """
     <style>
-        /* Multiselect options */
     ul {
         background-color: #000 !important;
         border: 1px solid #d72a18 !important;
@@ -155,27 +148,26 @@ st.markdown("""
 <style>
 
 div[data-baseweb="select"] > div {
-    background-color: #111 !important;       /* Caja negra */
+    background-color: #111 !important;      
     border-radius: 8px !important;
-    border: 1px solid #fff !important;    /* Borde rojo */
+    border: 1px solid #fff !important; 
 }
 
 
 div[data-baseweb="select"] svg {
-    color: #fff !important;                  /* Flechas blancas */
+    color: #fff !important;               
 }
 
 div[data-baseweb="select"] input {
-    color: #fff !important;                  /* Texto blanco */
+    color: #fff !important;               
 }
 
 div[data-baseweb="select"] span {
-    color: #fff !important;                  /* Texto de opciones */
+    color: #fff !important;                 
     font-size: 16px !important;
     font-family: 'Montserrat', sans-serif !important;
 }
 
-/* Opciones desplegadas */
 ul {
     background-color: #111 !important;
     border: 1px solid #111 !important;
@@ -191,13 +183,11 @@ ul li:hover {
     color: #fff !important;
 }
 
-/* Chips seleccionados */
 div[data-baseweb="tag"] {
     background-color: #d72a18 !important;
     color: #fff !important;
     border-radius: 5px !important;
 }
-
 
 </style>
 """, unsafe_allow_html=True)

@@ -10,36 +10,31 @@ from api import get_movie_poster
 from streamlit_star_rating import st_star_rating
 
 
-
-# ========================
-# CUSTOM CSS PARA SIDEBAR
-# ========================
 st.markdown("""
 <style>
-/* Fondo negro del sidebar */
+
 [data-testid="stSidebar"] {
     background-color: #111111 !important;
 }
 
-/* Items del menú (Home, Details, Watchlist, Profile) */
+
 [data-testid="stSidebarNav"] span {
     color: #FFFFFF !important;         /* texto blanco */
     font-weight: none;
     font-size: 16px !important;
 }
 
-/* Item seleccionado */
+
 [data-testid="stSidebarNav"] .css-1fv8s86 {
-    color: #d72a18 !important;         /* item activo rojo estilo Netflix */
+    color: #d72a18 !important;      
 }
 
-/* Hover sobre los items */
+
 [data-testid="stSidebarNav"] span:hover {
     color: #fff !important;
     cursor: pointer;
 }
 
-/* Ajuste de padding interno para que se vea ordenado */
 [data-testid="stSidebarNav"] {
     padding-top: 10px;
 }
@@ -50,27 +45,27 @@ st.markdown("""
 <style>
 
 div[data-baseweb="select"] > div {
-    background-color: #111 !important;       /* Caja negra */
+    background-color: #111 !important;      
     border-radius: 8px !important;
-    border: 1px solid #fff !important;    /* Borde rojo */
+    border: 1px solid #fff !important;    
 }
 
 
 div[data-baseweb="select"] svg {
-    color: #fff !important;                  /* Flechas blancas */
+    color: #fff !important;                 
 }
 
 div[data-baseweb="select"] input {
-    color: #fff !important;                  /* Texto blanco */
+    color: #fff !important;                  
 }
 
 div[data-baseweb="select"] span {
-    color: #fff !important;                  /* Texto de opciones */
+    color: #fff !important;                 
     font-size: 16px !important;
 
 }
 
-/* Opciones desplegadas */
+
 ul {
     background-color: #111 !important;
     border: 1px solid #111 !important;
@@ -86,7 +81,7 @@ ul li:hover {
     color: #fff !important;
 }
 
-/* Chips seleccionados */
+
 div[data-baseweb="tag"] {
     background-color: #d72a18 !important;
     color: #fff !important;
@@ -98,14 +93,9 @@ div[data-baseweb="tag"] {
 """, unsafe_allow_html=True)
 
 
-
-# ========================
-# CUSTOM CSS FOR FULL BLACK SCREEN
-# ========================
-
 st.markdown("""
 <style>
-/* ==== LOGIN BOX ===== */
+
 .login-box {
     background-color: #111111;
     max-width: 600px;
@@ -118,7 +108,7 @@ st.markdown("""
     border: 10px
 }
 
-/* ==== LOGIN TITLE ===== */
+
 .login-box h2 {
     color: #d72a18;
     font-size: 80px;
@@ -126,24 +116,24 @@ st.markdown("""
     margin-bottom: 20px;
 }
 
-/* ==== LOGIN SUBTITLE ===== */
+
 .login-box p {
     color: #fff;
     font-size: 20px;
     margin-bottom: 30px;
 }
 
-/* ==== INPUTS BLANCOS ===== */
+
 div[data-testid="stTextInput"] input {
-    background-color: #fff !important;  /* fondo blanco */
-    color: #000 !important;             /* texto negro */
+    background-color: #fff !important;  
+    color: #000 !important;             
     border: 1px solid #333 !important;
     border-radius: 6px !important;
     padding: 8px 10px !important;
     font-size: 16px !important;
 }
 
-/* ==== INPUT LABELS ===== */
+
 div[data-testid="stTextInput"] label {
     font-size: 16px !important;
     color: #000 !important;
@@ -151,7 +141,7 @@ div[data-testid="stTextInput"] label {
     margin-bottom: 5px;
 }
 
-/* ==== BOTÓN ROJO  ===== */
+
 div[data-testid="stButton"] {
     display: flex !important;
     justify-content: center !important;
@@ -175,7 +165,7 @@ div[data-testid="stButton"] button:hover {
     transform: scale(1.03);
 }
 
-/* ==== RADIO BUTTONS ===== */
+
 div[data-baseweb="radio"] label span {
     color: #fff !important;
     font-size: 16px !important;
@@ -186,19 +176,16 @@ div[data-baseweb="radio"] > div {
     margin-top: 5px !important;
 }
 
-/* ==== ERROR MESSAGES (mantener tu estilo actual) ===== */
-/* No modificamos nada, usarás st.error o tu div existente */
+
 </style>
 """, unsafe_allow_html=True)
 
-
-# Apply custom CSS for the text_input label
 st.markdown("""
 <style>
-/* Change the font size and color of text_input labels */
+
 div[data-testid="stTextInput"] label {
-    font-size: 50px !important;  /* Adjust size */
-    color: #000 !important;   /* Optional: change color */
+    font-size: 50px !important; 
+    color: #000 !important;   
     font-weight: bold !important;
 }
 </style>
@@ -313,20 +300,16 @@ if not st.session_state.authenticated:
 
 st.markdown("""
 <style>
-/* Fondo negro para toda la app */
 [data-testid="stAppViewContainer"] {
-    background-color: #111111 !important; /* Fondo negro oscuro */
+    background-color: #111111 !important; 
 }
 
-
-/* Fondo negro del área principal de contenido */
 [data-testid="stMainContent"] {
     background-color: #111111 !important;
     color: #ffffff !important;
 }
 
 
-/* Título principal */
 .recommendation-section h1 {
     color: #d72a18;         
     font-size: 48px;        
@@ -384,11 +367,10 @@ if get_initial(st.session_state.username) == 0:
         else:
             st.markdown("""
             <style>
-            /* Cambiar estilo de st.warning */
             div[data-testid="stAlert"] {
-                background-color: #2b2b2b !important;  /* gris oscuro */
-                color: #ffffff !important;             /* texto blanco */
-                border-left: 5px solid #d72a18 !important; /* borde rojo Netflix */
+                background-color: #2b2b2b !important;  
+                color: #ffffff !important;             
+                border-left: 5px solid #d72a18 !important; 
                 padding: 15px;
                 border-radius: 8px;
                 font-weight: bold;
@@ -416,7 +398,7 @@ st.markdown("""
     text-align: center;
 }
 
-/* Título principal */
+
 .recommendation-section h1 {
     color: #d72a18;         
     font-size: 70px !important;        
@@ -425,7 +407,7 @@ st.markdown("""
     margin-bottom: 15px;
 }
 
-/* Subtítulos o texto adicional */
+
 .recommendation-section p {
     color: #ffffff;            
     font-size: 22px;
@@ -437,31 +419,26 @@ st.markdown("""
 
 st.markdown("""
 <style>
-/* Fondo negro para toda la app */
+
 [data-testid="stAppViewContainer"] {
-    background-color: #111111 !important; /* Fondo negro oscuro */
+    background-color: #111111 !important; 
 }
 
 
-/* Fondo negro del área principal de contenido */
 [data-testid="stMainContent"] {
     background-color: #111111 !important;
     color: #ffffff !important;
 }
 
-/* Fondo negro de sidebar (si la usas) */
 [data-testid="stSidebar"] {
     background-color: #111111 !important;
     color: #ffffff !important;
 }
 
-/* Fondo negro de los formularios y bloques */
 section {
     background-color: #111111 !important;
 }
 
-
-/* Título principal */
 .recommendation-section h1 {
     color: #d72a18;         
     font-size: 48px;        
@@ -478,14 +455,13 @@ section {
 
 st.markdown("""
 <style>
-/* Animación suave */
 @keyframes fadeIn {
     0% { opacity: 0; transform: translateY(10px); }
     100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Título principal estilo Netflix */
-.netflix-title {
+
+.red-title {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     font-weight: 700;
     font-size: 4.5rem !important;
@@ -497,15 +473,13 @@ st.markdown("""
     width: 100%;
     animation: fadeIn 1s ease-out forwards;
 
-    /* Glow + sombra */
     text-shadow:
         0 0 10px rgba(215, 42, 24, 0.6),
         0 0 20px rgba(215, 42, 24, 0.4),
         0 0 30px rgba(215, 42, 24, 0.2);
 }
 
-/* Subtítulo blanco con sombra suave */
-.netflix-subtitle {
+.red-subtitle {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     font-weight: 400;
     font-size: 1.3rem !important;
@@ -517,7 +491,6 @@ st.markdown("""
     width: 100%;
     animation: fadeIn 1.3s ease-out forwards;
 
-    /* sombra suave */
     text-shadow:
         0 0 8px rgba(255, 255, 255, 0.4),
         0 0 14px rgba(255, 255, 255, 0.2);
@@ -529,19 +502,17 @@ st.markdown("""
 
 st.markdown("""
 <style>
-/* Animación suave */
 @keyframes fadeIn {
     0% { opacity: 0; transform: translateY(10px); }
     100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Subtítulo sin glow, solo sombra suave */
-.netflix-title2 {
+.red-title2 {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     font-weight: 700;
     font-size: 2.5rem !important;
     text-align: center;
-    color: #d72a18 !important;  /* rojo Netflix */
+    color: #d72a18 !important;
     letter-spacing: 0.5px;
     margin-top: 15px;
     margin-bottom: 20px;
@@ -556,9 +527,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Bloque de recomendaciones
-st.markdown('<h1 class="netflix-title">Movie Recommendations</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="red-title">Movie Recommendations</h1>', unsafe_allow_html=True)
 
-st.markdown('<h3 class="netflix-subtitle" style="color:#FFFFFF !important;">Checkout Your Personalized Movie Picks!</h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="red-subtitle" style="color:#FFFFFF !important;">Checkout Your Personalized Movie Picks!</h3>', unsafe_allow_html=True)
 
 
 
@@ -590,7 +561,7 @@ try:
         
 
 except Exception as e:
-    st.error(f"No se pudo cargar la información: {e}")
+    st.error(f"The information could not be loaded: {e}")
 
 # ========================
 # RECOMMENDATIONS FOR LOGGED-IN USER
@@ -600,7 +571,7 @@ st.markdown("")
 st.markdown("")
 st.markdown("")
 
-st.markdown('<h3 class="netflix-title2" style="font-size:1rem !important;">Recommended Movies For You</h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="red-title2" style="font-size:1rem !important;">Recommended Movies For You</h3>', unsafe_allow_html=True)
 
 
 
@@ -687,27 +658,26 @@ st.markdown("""
 <style>
 
 div[data-baseweb="select"] > div {
-    background-color: #111 !important;       /* Caja negra */
+    background-color: #111 !important;       
     border-radius: 8px !important;
-    border: 1px solid #fff !important;    /* Borde rojo */
+    border: 1px solid #fff !important;    
 }
 
 
 div[data-baseweb="select"] svg {
-    color: #fff !important;                  /* Flechas blancas */
+    color: #fff !important;                  
 }
 
 div[data-baseweb="select"] input {
-    color: #fff !important;                  /* Texto blanco */
+    color: #fff !important;                  
 }
 
 div[data-baseweb="select"] span {
-    color: #fff !important;                  /* Texto de opciones */
+    color: #fff !important;              
     font-size: 16px !important;
 
 }
 
-/* Opciones desplegadas */
 ul {
     background-color: #111 !important;
     border: 1px solid #111 !important;
@@ -724,7 +694,6 @@ ul li:hover {
     color: #fff !important;
 }
 
-/* Chips seleccionados */
 div[data-baseweb="tag"] {
     background-color: #d72a18 !important;
     color: #fff !important;

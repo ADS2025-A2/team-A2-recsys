@@ -5,17 +5,10 @@ from streamlit_star_rating import st_star_rating
 from database import save_rating, get_rating, add_to_watchlist, get_initial
 from Home import fix_title
 
-
-# ========================
-# Aesthetic Dark Theme CSS
-# ========================
-
-
 st.markdown("""
 <style>
-/* Iconos del sidebar svg */
 [data-testid="stSidebar"] svg {
-    fill: #111111 !important;   /* Cambia a gris oscuro */
+    fill: #111111 !important;   
     color: #111111 !important;
 }
 
@@ -24,33 +17,30 @@ st.markdown("""
 
 st.markdown("""
 <style>
-/* Fondo negro del sidebar */
 [data-testid="stSidebar"] {
     background-color: #111111 !important;
     color: #111111 !important
     
 }
 
-/* Items del menú (Home, Details, Watchlist, Profile) */
 [data-testid="stSidebarNav"] span {
-    color: #FFFFFF !important;         /* texto blanco */
+    color: #FFFFFF !important;         
     font-weight: none;
     font-size: 16px !important;
 }
 
 
-/* Item seleccionado */
 [data-testid="stSidebarNav"] .css-1fv8s86 {
-    color: #d72a18 !important;         /* item activo rojo estilo Netflix */
+    color: #d72a18 !important;         
 }
 
-/* Hover sobre los items */
+
 [data-testid="stSidebarNav"] span:hover {
     color: #fff !important;
     cursor: pointer;
 }
 
-/* Ajuste de padding interno para que se vea ordenado */
+
 [data-testid="stSidebarNav"] {
     padding-top: 10px;
 }
@@ -62,28 +52,27 @@ st.markdown("""
 st.markdown("""
 <style>
 
-/* Contenedores de secciones */
 section {
     background-color: #111111 !important;
     color: #FFF !important;
 }
 
-/* Títulos principales */
+
 h1, h2, h3, h4, h5 {
-    color: #d72a18 !important;  /* rojo tipo Netflix */
+    color: #d72a18 !important;  
     margin-top: 10px;
     margin-bottom: 10px;
     text-align: center;
 }
 
-/* Subtítulos y texto normal */
+
 p, span, label {
     color: #FFFFFF !important;
     font-size: 16px;
     margin: 0;
 }
 
-/* Botones */
+
 div[data-testid="stButton"] button {
     background-color: #d72a18 !important;
     color: #111111 !important;
@@ -98,7 +87,7 @@ div[data-testid="stButton"] button:hover {
     transform: scale(1.02);
 }
 
-/* Inputs y select */
+
 div[data-testid="stTextInput"] input, div[data-baseweb="select"] > div {
     background-color: #111 !important;
     color: #111 !important;
@@ -107,7 +96,7 @@ div[data-testid="stTextInput"] input, div[data-baseweb="select"] > div {
     padding: 6px 10px;
 }
 
-/* Multiselect options */
+
 ul {
     background-color: #111 !important;
     border: 1px solid #111 !important;
@@ -125,13 +114,8 @@ ul li:hover {
 -----
 
 div[data-baseweb="select"] svg {
-    color: #fff !important;                  /* Flechas blancas */
+    color: #fff !important;                  
 }
-
-----
-
-
-
 
 /* Warning / success / error messages */
 div[data-testid="stAlert"] {
@@ -145,7 +129,6 @@ div[data-testid="stAlert"] {
 }
 
 
-/* Movie poster centering */
 .stImage img {
     display: block;
     margin-left: auto;
@@ -157,9 +140,8 @@ div[data-testid="stAlert"] {
 
 st.markdown("""
 <style>
-/* Iconos del sidebar svg */
 [data-testid="stSidebar"] svg {
-    fill: #111111 !important;   /* Cambia a gris oscuro */
+    fill: #111111 !important;   
     color: #111111 !important;
 }
 
@@ -288,7 +270,6 @@ def show_info(movie):
             transform: scale(1.02);
         }
 
-        /* Centrar el botón */
         div[data-testid="stButton"] {
             display: flex;
             justify-content: center;

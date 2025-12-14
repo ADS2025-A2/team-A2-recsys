@@ -21,21 +21,14 @@ cookies = EncryptedCookieManager(
 if not cookies.ready():
     st.stop()
 
-
-
-# --------------------------
-# ESTILOS
-# --------------------------
 st.markdown(
     """
     <style>
-    /* Fondo de toda la app */
     .stApp {
         background-color: #111111;
         color: white;
     }
 
-    /* Título principal */
     h1 {
         color: #d72a18 !important;
         text-align: center;
@@ -45,11 +38,11 @@ st.markdown(
     }
 
     h2 {
-            color: #FFFFFF !important;
-            text-align: left;
-            font-size: 18px !important;
-            font-family: Arial, sans-serif;
-            margin-bottom: 5px;
+        color: #FFFFFF !important;
+        text-align: left;
+        font-size: 18px !important;
+        font-family: Arial, sans-serif;
+        margin-bottom: 5px;
         }
 
     h3 {
@@ -60,7 +53,6 @@ st.markdown(
         margin-bottom: 20px;
     }
     
-    /* Label del multiselect */
     .st-bk {
         color: #d72a18 !important;
         font-size: 15px !important;
@@ -68,11 +60,9 @@ st.markdown(
         text-align: left;
     }
 
-
-    /* Botones */
     div.stButton > button {
-        background-color: #d72a18 !important;  /* rojo */
-        color: white !important;               /* texto negro */
+        background-color: #d72a18 !important;  
+        color: white !important;               
         font-weight: bold;
         border-radius: 8px;
         padding: 10px 20px;
@@ -94,25 +84,23 @@ st.markdown("""
     background-color: #111111 !important;
 }
 
-/* Items del menú (Home, Details, Watchlist, Profile) */
 [data-testid="stSidebarNav"] span {
-    color: #FFFFFF !important;         /* texto blanco */
+    color: #FFFFFF !important;       
     font-weight: none;
     font-size: 16px !important;
 }
 
-/* Item seleccionado */
+
 [data-testid="stSidebarNav"] .css-1fv8s86 {
-    color: #d72a18 !important;         /* item activo rojo estilo Netflix */
+    color: #d72a18 !important;        
 }
 
-/* Hover sobre los items */
+
 [data-testid="stSidebarNav"] span:hover {
     color: #fff !important;
     cursor: pointer;
 }
 
-/* Ajuste de padding interno para que se vea ordenado */
 [data-testid="stSidebarNav"] {
     padding-top: 10px;
 }
@@ -122,7 +110,7 @@ st.markdown("""
 st.markdown(
     """
     <style>
-        /* Multiselect options */
+
     ul {
         background-color: #000 !important;
         border: 1px solid #d72a18 !important;
@@ -145,27 +133,27 @@ st.markdown("""
 <style>
 
 div[data-baseweb="select"] > div {
-    background-color: #111 !important;       /* Caja negra */
+    background-color: #111 !important;     
     border-radius: 8px !important;
-    border: 1px solid #fff !important;    /* Borde rojo */
+    border: 1px solid #fff !important;
 }
 
 
 div[data-baseweb="select"] svg {
-    color: #fff !important;                  /* Flechas blancas */
+    color: #fff !important;            
 }
 
 div[data-baseweb="select"] input {
-    color: #fff !important;                  /* Texto blanco */
+    color: #fff !important;                  
 }
 
 div[data-baseweb="select"] span {
-    color: #fff !important;                  /* Texto de opciones */
+    color: #fff !important;               
     font-size: 16px !important;
     font-family: 'Montserrat', sans-serif !important;
 }
 
-/* Opciones desplegadas */
+
 ul {
     background-color: #111 !important;
     border: 1px solid #111 !important;
@@ -183,7 +171,7 @@ ul li:hover {
     color: #fff !important;
 }
 
-/* Chips seleccionados */
+
 div[data-baseweb="tag"] {
     background-color: #d72a18 !important;
     color: #fff !important;
