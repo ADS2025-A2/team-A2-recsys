@@ -117,9 +117,7 @@ Minimum acceptable performance thresholds:
 
 ```python
 THRESHOLDS = {
-    "test_mrr": 0.02,
-    "precision_at_10": 0.03,
-    "recall_at_10": 0.03,
+    "test_mrr": 0.02
 }
 ```
 

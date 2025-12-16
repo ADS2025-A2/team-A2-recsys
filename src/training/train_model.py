@@ -81,7 +81,7 @@ def create_git_tag(version: str, repo_name: str, github_token: str, model_key: s
 
     Tag format is <model_key>-1.<version>, e.g. "bpr-1.3".
     """
-    tag_name = f"{model_key}-1.{version}"
+    tag_name = f"{model_key}-2.{version}"
     try:
         subprocess.run(["git", "tag", tag_name], check=True)
         subprocess.run(["git", "push", "origin", tag_name], check=True)
@@ -426,7 +426,7 @@ def main():
 
             # 8) Git tagging (primary model only)
             github_token = os.environ.get("GITHUB_TOKEN")
-            repo_name = config.get("github_repo")
+            repo_name = "ADS2025-A2/team-A2-recsys"
 
             if model_key == primary_model_key:
                 if github_token and repo_name:
