@@ -1,4 +1,3 @@
-
 import streamlit as st
 from streamlit_cookies_manager import EncryptedCookieManager
 from datetime import datetime, timedelta
@@ -10,6 +9,7 @@ import os
 from api import get_movie_poster
 from streamlit_star_rating import st_star_rating
 from pathlib import Path
+import random  # ✅ ADDED
 
 
 st.markdown("""
@@ -566,6 +566,33 @@ def fix_title(title):
     return title
 
 # ========================
+# RANDOM MOVIE FALLBACK ✅ ADDED
+# ========================
+def get_random_movies(df: pd.DataFrame, k: int = 12, seed_key: str = "random_seed"):
+    """
+    Returns k random movies from df.
+    Uses a session seed so the list doesn't change on every rerun,
+    unless you explicitly change the seed.
+    """
+    if df is None or df.empty:
+        return []
+
+    if seed_key not in st.session_state:
+        st.session_state[seed_key] = random.randint(1, 10_000_000)
+
+    rnd = random.Random(st.session_state[seed_key])
+    sample_idx = rnd.sample(list(df.index), k=min(k, len(df)))
+
+    out = []
+    for i in sample_idx:
+        row = df.loc[i]
+        out.append({
+            "title": row["title"],     # includes (YEAR) in your dataset
+            "genre": row.get("genres", "Unknown")
+        })
+    return out
+
+# ========================
 # MOVIE CATALOG
 # ========================
 
@@ -608,8 +635,8 @@ try:
 
     mapped_internal_id = st.session_state.user_map.get(username)
 
+    # ✅ CHANGED: if user is not in mapping, fall back later to random movies
     if mapped_internal_id is None:
-        st.info("No recommendations available for this user yet (user not found in mapping).")
         user_recs = pd.DataFrame()
     else:
         # Match on internal_user_id (Option A)
@@ -665,20 +692,54 @@ if recommended_movies:
                         add_to_watchlist(st.session_state.username, title, year)
                         st.success(f"{title} added to watchlist!")
 else:
+    # ✅ NEW: Random fallback UI (no CSS changes)
+    if st.button("🎲 Refresh random picks"):
+        st.session_state["random_seed"] = random.randint(1, 10_000_000)
+        st.rerun()
+
     st.markdown("""
     <div style="
         background-color: #111111;
-        color: #fff;
-        border: 1px solid #111111;
-        padding: 15px 20px;
-        border-radius: 10px;
+        color: #ffffff;
+        border: 1px solid #2b2b2b;
+        padding: 14px 18px;
+        border-radius: 12px;
         text-align: center;
         font-size: 16px;
         font-family: 'Montserrat', sans-serif;
     ">
-    No recommendations available for you.
+    No personalized recommendations yet, but here are some random picks to explore 👇
     </div>
     """, unsafe_allow_html=True)
+
+    random_movies = get_random_movies(st.session_state.df, k=12)
+
+    cols = st.columns(3)
+    for idx, movie in enumerate(random_movies):
+        title, year = movie["title"].rsplit(" (", 1)
+        year = year.replace(")", "")
+
+        with cols[idx % 3]:
+            with st.form(key=f"random_movie_form_{idx}"):
+                st.markdown(
+                    f"""
+                    <div style='padding: 10px; border: 1px solid #ddd; 
+                                border-radius: 10px; margin-bottom: 15px;'>
+                        <h4 style='margin-bottom: 5px;'>{fix_title(title)}</h4>
+                        <p style='color: gray;'>🎭 {movie['genre']}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.form_submit_button("Info", key=f"rand_info_{idx}"):
+                        st.session_state.selected_movie = movie["title"]
+                        st.switch_page("pages/1_Details.py")
+                with col2:
+                    if st.form_submit_button("Add to Watchlist", key=f"rand_watch_{idx}"):
+                        add_to_watchlist(st.session_state.username, title, year)
+                        st.success(f"{title} added to watchlist!")
 
 
 options = st.session_state.df["title"]
