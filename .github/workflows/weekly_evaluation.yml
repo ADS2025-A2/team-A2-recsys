@@ -28,7 +28,4 @@ jobs:
       # 4. Run the evaluation script
       - name: Run weekly evaluation
         run: |
-          python src/training/evaluate_model.py \
-            --model_path models/baseline_recommender.pt \
-            --feedback_csv data/processed/ratings_from_db.csv \
-            --project_root .
+          python src/training/evaluate_model.py
