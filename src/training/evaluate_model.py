@@ -7,16 +7,14 @@ import torch
 import mlflow
 from spotlight.evaluation import mrr_score, precision_recall_score
 from train_model import load_config, main as train_pipeline
-
+import runpy
 
 # ============================================================
 # 0. Thresholds
 # ============================================================
 
 THRESHOLDS = {
-    "test_mrr": 0.02,
-    "precision_at_10": 0.03,
-    "recall_at_10": 0.03,
+    "test_mrr": 0.02
 }
 
 MRR_DROP_THRESHOLD = 0.10
@@ -145,11 +143,10 @@ def get_previous_mlflow_metrics():
 def should_retrain(current):
     retrain = False
 
-    # Cold-start thresholds
-    for metric, threshold in THRESHOLDS.items():
-        if current[metric] < threshold:
-            print(f"[Trigger] {metric}={current[metric]:.4f} < {threshold:.4f}")
-            retrain = True
+    # Cold-start threshold
+    if current.get("test_mrr", 0) < THRESHOLDS["test_mrr"]:
+        print(f"[Trigger] test_mrr={current['test_mrr']:.4f} < {THRESHOLDS['test_mrr']:.4f}")
+        retrain = True
 
     # Previous MLRuns
     prev = get_previous_mlflow_metrics()
@@ -208,8 +205,9 @@ def main():
 
     # Step 3 — Check triggers
     if should_retrain(curr_metrics):
-        print("⚠ Retraining triggered.")
-        # train_pipeline()  # uncomment when ready
+        print("Retraining triggered.")
+        #runpy.run_path("train_model.py", run_name="__main__")
+
     else:
         print("No retraining needed.")
 
