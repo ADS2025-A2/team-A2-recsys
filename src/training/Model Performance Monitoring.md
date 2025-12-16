@@ -1,113 +1,216 @@
-# Model Performance Monitoring & Retraining Policy #
+# End-to-End Model Monitoring
 
-This document defines the **key metrics**, **evaluation procedures**, and **retraining triggers** for the Spotlight BPR Movie Recommendation Model.
-
-The goal is to ensure that recommendations stay relevant as user-level interaction data evolves (e.g., new ratings, updated watchlists, changes in trends).
+This document describes the **end-to-end monitoring setup** for the recommendation system, covering data ingestion, model evaluation, metric tracking, automated checks, and retraining triggers. The goal is to ensure **model quality, stability, and business relevance over time**.
 
 ---
 
-## **1. Key Metrics**
+## 1. Monitoring Goals
 
-We monitor **ranking-based recommendation metrics**, computed on frontend users who have completed initial ratings.
+The monitoring system is designed to:
 
-### **1.1. Mean Reciprocal Rank (MRR)**
-
-**Definition:**
-MRR measures the rank of the first relevant item in the recommended list for a user.
-**Interpretation:** Higher MRR indicates that relevant items appear early in the recommendation list. This metric is robust even for users with few ratings.
-Current threshold: 0.02
-
-### **1.2. Precision@K**
-
-**Definition:**
-Percentage of the top-10 recommended items that are relevant to the user.
-**Interpretation:** 
-Reflects recommendation accuracy. For frontend users with few ratings, a lower threshold is expected due to the cold-start problem.
-Current threshold for frontend users: 0.03 (can be increased as users provide more ratings).
-
-### **1.3. Recall@K**
-
-**Definition:**
-Percentage of relevant items that appear in the top-K recommendations.
-**Interpretation:** 
-Reflects coverage of the user’s preferences.
-Current threshold for frontend users: 0.03 (can be increased as users provide more ratings).
-
-### **1.4. Offline Monitoring Frequency**
-
-Metrics are logged on every training run in MLflow:
-
-| Step            | Metric                                        |
-| --------------- | --------------------------------------------- |
-| Test step       | `test_mrr`, `precision_10`, `recall_10` |
-| Run metadata    | hyperparameters, dataset sizes                |
+* Continuously evaluate model performance on **real frontend user behavior**
+* Detect **performance degradation** early
+* Identify **data distribution shifts** (e.g. new users)
+* Provide **traceability** of metrics over time
+* Automatically trigger **model retraining** when necessary
 
 ---
 
-# **2. Thresholds for Model Retraining**
+## 2. High-Level Architecture
 
-Retraining is required to ensure that the recommendation model remains accurate and relevant, especially as new users and interactions are added. The triggers are based on user activity, model performance, and drift detection.
+**End-to-end flow:**
 
-### **2.1. User Growth-Based Triggers
-
-**New users threshold:**
-* Trigger retraining when the number of new frontend users since the last training run exceeds a defined percentage of total users (10%).
-
-**Ratings accumulation:**
-* Retrain when the average number of ratings per user increases significantly, e.g., when the new batch of users have submitted ≥5–10 ratings each.
-
-### **2.2. Metric-Based Triggers
-
-**Cold-start metrics decline:**
-* Trigger retraining if MRR, Precision@10, or Recall@10 for new users fall below predefined thresholds for consecutive evaluation periods.
-Example: Precision@10 < 0.03 or Recall@10 < 0.03 for 3 evaluation runs in a row.
-
-**Overall performance drift:**
-* Track metrics across all frontend users.
-Significant decline (e.g., >10% drop in MRR) triggers retraining.
-Detects trends such as changes in user behavior or new popular movies.
-
-### **2.3. Frequency-Based Triggers
-* Schedule regular retraining (biweekly) even if thresholds are not crossed, to incorporate accumulated feedback.
-
-# **3. Runtime Trigger for a Single-User Recommendation Refresh**
-
-When a user updates:
-
-* new ratings
-* updated watchlist
-* changed initial preferences
-
-We **do not retrain the full model**.
-
-Instead, we:
-
-1. Embed the user using the existing Spotlight model
-   – call `model.predict(user_id)` for updated scores
-2. Re-generate top-10 recommendations
-3. Store them in the user’s recommendation table
+1. Frontend users interact with the application
+2. Ratings are stored in the application database
+3. A scheduled evaluation job runs periodically
+4. The trained model is evaluated on fresh frontend data
+5. Metrics are logged to MLflow
+6. Metrics are compared to thresholds and previous runs
+7. Retraining is triggered if conditions are met
 
 ---
 
-# **4. Full Retraining Workflow (CI/CD)**
+## 3. Data Monitoring (Input Layer)
 
-Retraining is automatically triggered when:
+### 3.1 Data Source
 
-✔ Metric drop > threshold
-✔ Data drift exceeds configured limits
-✔ Scheduled retraining interval reached (e.g., every 14 days)
+* Source: `user_data.db`
+* Tables used:
 
-### **Pipeline Behavior**
+  * `ratings`
+  * `initial_ratings`
 
-* Runs `train_model.py`
-* Logs metrics to MLflow
-* Registers new model version if thresholds are met
-* Tags repo with new version (`git tag 1.X`)
-* Generates new top-10 recommendations for all users
-* Exports them to:
+Only users who **completed the initial onboarding ratings** are included to ensure data quality.
 
+```sql
+SELECT r.username, r.movie, r.rating
+FROM ratings r
+JOIN initial_ratings i ON r.username = i.username
+WHERE i.done = 1
 ```
-models/top10_recommendations_with_titles.csv
+
+### 3.2 Input Validation
+
+The evaluation pipeline checks:
+
+* Presence of frontend ratings
+* Number of users
+* Number of ratings
+* Average ratings per user
+
+If no valid data is found, the evaluation exits gracefully.
+
+---
+
+## 4. Model Evaluation Monitoring
+
+### 4.1 Evaluation Schedule
+
+* Triggered via **GitHub Actions**
+* Runs:
+
+  * Weekly (cron)
+  * On-demand (manual trigger)
+
+### 4.2 Metrics Computed
+
+The following metrics are calculated using **Spotlight**:
+
+| Metric                 | Description                            |
+| ---------------------- | -------------------------------------- |
+| `test_mrr`             | Mean Reciprocal Rank (ranking quality) |
+| `precision_at_10`      | Precision@10                           |
+| `recall_at_10`         | Recall@10                              |
+| `num_users`            | Active frontend users                  |
+| `num_ratings`          | Total ratings                          |
+| `avg_ratings_per_user` | Engagement proxy                       |
+
+These metrics capture both **model quality** and **data health**.
+
+---
+
+## 5. Metric Logging & Tracking (MLflow)
+
+### 5.1 Experiment Setup
+
+* Tracking backend: local `mlruns/`
+* Experiment name: `evaluation_runs`
+
+Each evaluation run logs:
+
+* All computed metrics
+* Timestamped run metadata
+
+This enables:
+
+* Historical comparisons
+* Trend analysis
+* Auditing of model behavior
+
+---
+
+## 6. Automated Monitoring Rules
+
+### 6.1 Absolute Thresholds (Cold-Start Safety)
+
+Minimum acceptable performance thresholds:
+
+```python
+THRESHOLDS = {
+    "test_mrr": 0.02,
+    "precision_at_10": 0.03,
+    "recall_at_10": 0.03,
+}
 ```
+
+If any metric falls below its threshold → **retraining is triggered**.
+
+---
+
+### 6.2 Relative Performance Degradation
+
+To detect silent regressions, the current run is compared to the **previous MLflow run**.
+
+**MRR drop trigger:**
+
+* If `test_mrr` drops by more than **10%** compared to the previous run
+
+This protects against gradual model decay.
+
+---
+
+### 6.3 Data Drift Proxy: New User Growth
+
+User base changes can invalidate an existing model.
+
+Trigger condition:
+
+* New users increase by more than **10%** compared to the previous evaluation
+
+This acts as a **proxy for data distribution shift**.
+
+---
+
+## 7. Retraining Automation
+
+If any trigger condition is met:
+
+* A retraining flag is raised
+* The training pipeline can be executed automatically
+
+```python
+if should_retrain(curr_metrics):
+    train_pipeline()
+```
+
+This ensures the system remains adaptive as user behavior evolves.
+
+---
+
+## 8. CI/CD Integration
+
+The evaluation pipeline is integrated into CI using **GitHub Actions**:
+
+* Reproducible environment
+* Dependency-controlled execution
+* Scheduled and manual runs
+
+This guarantees consistent monitoring independent of local machines.
+
+---
+
+## 9. Failure Handling & Safety
+
+* Missing data → graceful exit
+* No previous runs → skip comparisons
+* Metrics always logged before decisions
+
+The system prioritizes **robustness and explainability** over aggressive automation.
+
+---
+
+## 10. Benefits of This Monitoring Setup
+
+* Early detection of model degradation
+* Continuous visibility into model health
+* Automated retraining triggers
+* Clear separation of concerns (data, model, monitoring)
+* Scalable foundation for production MLOps
+
+---
+
+## 11. Future Extensions
+
+Possible enhancements:
+
+* Alerting (Slack / Email)
+* Model version comparison dashboards
+* Feature-level data drift detection
+* Shadow model evaluation
+* Remote MLflow tracking backend
+
+---
+
+**This end-to-end monitoring setup ensures that the recommendation system remains accurate, reliable, and aligned with real user behavior over time.**
 
 
