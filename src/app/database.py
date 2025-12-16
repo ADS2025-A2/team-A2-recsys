@@ -131,7 +131,9 @@ def register_user(username, password):
         conn.commit()
 
         # Return user_id robustly
-        cursor.execute("SELECT user_id FROM users WHERE username = ? LIMIT 1", (username,))
+        
+        cursor.execute("SELECT 1 FROM users WHERE username=? LIMIT 1", (username,))
+        
         row = cursor.fetchone()
         return row[0] if row else None
 
