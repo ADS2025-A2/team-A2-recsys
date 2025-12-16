@@ -1,4 +1,4 @@
-# src/training/evaluate_and_trigger.py
+# src/training/evaluate_model.py
 
 from pathlib import Path
 import pandas as pd
