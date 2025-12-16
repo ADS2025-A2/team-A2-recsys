@@ -13,9 +13,11 @@ def init_db():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            username TEXT PRIMARY KEY,
+            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
             password_hash TEXT
-        )
+        );
+
     """)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS initial_ratings (
@@ -37,10 +39,12 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ratings (
             username TEXT,
+            user_id INTEGER,
             movie TEXT,
             rating INTEGER,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (username, movie)
-        )
+);
     """)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS watchlist (
@@ -60,12 +64,17 @@ def register_user(username, password):
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", 
-                  (username, password_hash))
+        cursor.execute(
+            "INSERT INTO users (username, password_hash) VALUES (?, ?)", 
+            (username, password_hash)
+        )
         conn.commit()
-        return True
+        # Return user_id
+        cursor.execute("SELECT user_id FROM users WHERE username = ?", (username,))
+        user_id = cursor.fetchone()[0]
+        return user_id
     except sqlite3.IntegrityError:
-        return False  # Username already exists
+        return None  # Username already exists
     finally:
         conn.close()
 
@@ -81,6 +90,18 @@ def verify_login(username, password):
         return True
     return False
 
+def get_user_id(username: str):
+    """
+    Return the numeric user_id for a given username.
+    Returns None if the user does not exist.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM users WHERE username = ?", (username,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
+
 def get_preferences(username):
     conn = get_connection()
     cursor = conn.cursor()
@@ -90,32 +111,6 @@ def get_preferences(username):
     if row:
         return row[0].split(",")
     return []
-
-def save_preferences(username, genres):
-    conn = get_connection()
-    cursor = conn.cursor()
-    genres_str = ",".join(genres)
-    cursor.execute("""
-        INSERT INTO preferences (username, genres)
-        VALUES (?, ?)
-        ON CONFLICT(username)
-        DO UPDATE SET genres=excluded.genres
-    """, (username, genres_str))
-    conn.commit()
-    conn.close()
-
-
-def save_rating(username, title, rating):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO ratings (username, movie, rating) VALUES (?, ?, ?)
-        ON CONFLICT(username, movie)
-        DO UPDATE SET rating = excluded.rating
-        """, (username, title, rating)
-    )
-    conn.commit()
-    conn.close()
 
 
 
@@ -162,6 +157,41 @@ def add_to_watchlist(username, movie, year):
         ON CONFLICT(username, movie) DO NOTHING
     """, (username, movie, year))
 
+    conn.commit()
+    conn.close()
+
+def save_rating(username, movie, rating):
+    user_id = get_user_id(username)
+    if user_id is None:
+        raise ValueError(f"User '{username}' does not exist")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO ratings (username, user_id, movie, rating, timestamp)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(username, movie) 
+        DO UPDATE SET rating=excluded.rating, timestamp=CURRENT_TIMESTAMP
+    """, (username,user_id,movie, rating))
+
+    conn.commit()
+    conn.close()
+
+def save_preferences(username: str, genres: list[str]):
+    """
+    Save or update the user's genre preferences.
+    `genres` should be a list of strings, e.g. ["Action", "Comedy"]
+    """
+    genres_str = ",".join(genres)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO preferences (username, genres)
+        VALUES (?, ?)
+        ON CONFLICT(username) DO UPDATE SET genres=excluded.genres
+    """, (username, genres_str))
     conn.commit()
     conn.close()
 

@@ -3,7 +3,7 @@ from streamlit_cookies_manager import EncryptedCookieManager
 from datetime import datetime, timedelta
 import pandas as pd
 import requests
-from database import init_db, verify_login, register_user, save_rating, get_rating, get_initial, set_initial_true, add_to_watchlist
+from database import init_db, verify_login, register_user, save_rating,save_preferences, get_rating, get_initial, set_initial_true, add_to_watchlist
 from model.recommendations import DUMMY_RECOMMENDATIONS
 import os
 from api import get_movie_poster
