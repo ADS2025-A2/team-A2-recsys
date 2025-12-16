@@ -530,10 +530,9 @@ st.markdown("""
 # Bloque de recomendaciones
 st.markdown('<h1 class="red-title">Movie Recommendations</h1>', unsafe_allow_html=True)
 
-st.markdown('<h3 class="red-subtitle" style="color:#FFFFFF !important;">Checkout Your Personalized Movie Picks!</h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="red-subtitle" style="color:#FFFFFF !important;">Check out Your Personalized Movie Picks!</h3>', unsafe_allow_html=True)
 
 
-st.title("🎬 Movie Recommendations")
 # ========================
 # LOAD FRONTEND USER -> TRAINING USER_ID MAPPING
 # ========================
@@ -620,8 +619,6 @@ except Exception as e:
 st.markdown("")
 st.markdown("")
 st.markdown("")
-
-st.markdown('<h3 class="red-title2" style="font-size:1rem !important;">Recommended Movies For You</h3>', unsafe_allow_html=True)
 
 
 
