@@ -11,3 +11,4 @@ flake8
 streamlit
 streamlit-cookies-manager
 torch
+st-star-rating

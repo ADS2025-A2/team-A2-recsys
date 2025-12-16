@@ -1,0 +1,26 @@
+username,movie_id,rating,movie
+test1,1,5,Toy Story
+test1,2628,5,Star Wars: Episode I - The Phantom Menace
+test1,1265,4,Groundhog Day
+test1,296,3,Pulp Fiction
+test1,1380,2,Grease
+test2,1,2,Toy Story
+test2,2628,1,Star Wars: Episode I - The Phantom Menace
+test2,1265,5,Groundhog Day
+test2,296,4,Pulp Fiction
+test2,1380,5,Grease
+test3,1,5,Toy Story
+test3,2628,3,Star Wars: Episode I - The Phantom Menace
+test3,1265,5,Groundhog Day
+test3,296,2,Pulp Fiction
+test3,1380,3,Grease
+test4,1,2,Toy Story
+test4,2628,5,Star Wars: Episode I - The Phantom Menace
+test4,1265,3,Groundhog Day
+test4,296,5,Pulp Fiction
+test4,1380,4,Grease
+test5,1,5,Toy Story
+test5,2628,5,Star Wars: Episode I - The Phantom Menace
+test5,1265,5,Groundhog Day
+test5,296,5,Pulp Fiction
+test5,1380,5,Grease

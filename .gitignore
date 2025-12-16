@@ -27,7 +27,6 @@ env.bak/
 # ---- Logs and databases ----
 *.log
 *.sqlite3
-*.db
 *.pid
 
 # ---- Unit test / coverage reports ----

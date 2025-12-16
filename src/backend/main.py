@@ -16,7 +16,8 @@ app = FastAPI()
 # ---------------------------
 # Cargar movies.dat
 # ---------------------------
-movies_path = "../data/processed/ml-10M100K/movies.dat"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))  # raíz del repo
+movies_path = os.path.join(BASE_DIR, "data", "processed", "ml-10M100K", "movies.dat")
 movies_df = pd.read_csv(
     movies_path,
     sep=",",   # tu separador real
