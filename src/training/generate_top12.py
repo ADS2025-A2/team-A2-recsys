@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import pandas as pd
+import spotlight
 
 from load import build_interactions, load_full_dataframe
 from baseline_recommender import SpotlightBPRRecommender
@@ -60,7 +61,7 @@ def main():
     model_path = models_dir / "bpr_recommender.pt"
     print(f"Loading trained model from {model_path} ...")
     recommender: SpotlightBPRRecommender = torch.load(
-        model_path, map_location="cpu"
+        model_path, map_location="cpu", weights_only=False
     )
     model = recommender.model
 
