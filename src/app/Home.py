@@ -1,3 +1,4 @@
+
 import streamlit as st
 from streamlit_cookies_manager import EncryptedCookieManager
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ from model.recommendations import DUMMY_RECOMMENDATIONS
 import os
 from api import get_movie_poster
 from streamlit_star_rating import st_star_rating
+from pathlib import Path
 
 
 st.markdown("""
@@ -229,7 +231,6 @@ if cookie_username and cookie_expiry:
     if datetime.now() < expiry_time:
         st.session_state.authenticated = True
         st.session_state.username = cookie_username
-
 
 # --- Hide sidebar on login screen ---
 if not st.session_state.authenticated:
@@ -532,6 +533,28 @@ st.markdown('<h1 class="red-title">Movie Recommendations</h1>', unsafe_allow_htm
 st.markdown('<h3 class="red-subtitle" style="color:#FFFFFF !important;">Checkout Your Personalized Movie Picks!</h3>', unsafe_allow_html=True)
 
 
+st.title("🎬 Movie Recommendations")
+# ========================
+# LOAD FRONTEND USER -> TRAINING USER_ID MAPPING
+# ========================
+@st.cache_data
+def load_frontend_user_map(mapping_path_str: str, mtime: float):
+    df_map = pd.read_csv(mapping_path_str)
+    # tolerate old column name if you ever had one
+    if "internal_user_id" not in df_map.columns and "user_id" in df_map.columns:
+        df_map = df_map.rename(columns={"user_id": "internal_user_id"})
+    return dict(zip(df_map["username"].astype(str), df_map["internal_user_id"].astype(int)))
+
+base_dir = Path(__file__).resolve().parents[2]
+mapping_path = base_dir / "models" / "frontend_user_map.csv"
+st.session_state.user_map = load_frontend_user_map(str(mapping_path), mapping_path.stat().st_mtime)
+
+if "user_map" not in st.session_state:
+    try:
+        st.session_state.user_map = load_frontend_user_map()
+    except Exception as e:
+        st.session_state.user_map = {}
+        st.warning(f"Could not load user mapping: {e}")
 
 def fix_title(title):
     articles = ["The", "A", "An"]
@@ -579,14 +602,24 @@ st.markdown('<h3 class="red-title2" style="font-size:1rem !important;">Recommend
 username = st.session_state.username
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-csv_path = os.path.join(BASE_DIR,"..", "training", "top10_recommendations_with_titles.csv")
+csv_path = os.path.join(BASE_DIR,"..", "..", "models", "top12_recommendations_with_titles.csv")
 try:
     rec_df = pd.read_csv(csv_path)
-    user_id = username
-    user_recs = rec_df[rec_df['user_id'] == user_id]
+
+    mapped_internal_id = st.session_state.user_map.get(username)
+
+    if mapped_internal_id is None:
+        st.info("No recommendations available for this user yet (user not found in mapping).")
+        user_recs = pd.DataFrame()
+    else:
+        # Match on internal_user_id (Option A)
+        rec_df["internal_user_id"] = rec_df["internal_user_id"].astype(int)
+        user_recs = rec_df[rec_df["internal_user_id"] == int(mapped_internal_id)]
+
     recommended_movies = []
     if not user_recs.empty:
-        titles = user_recs.iloc[0, 1:].dropna().tolist()  
+        # CSV columns are: internal_user_id, user_id, item_1..item_12
+        titles = user_recs.iloc[0, 2:].dropna().tolist()
         for title in titles:
             movie_row = st.session_state.df[st.session_state.df['title'] == title]
             if not movie_row.empty:
@@ -599,6 +632,7 @@ try:
                     "title": title,
                     "genre": "Unknown"
                 })
+
 except Exception as e:
     st.error(f"The recommendations could not be loaded: {e}")
     recommended_movies = []

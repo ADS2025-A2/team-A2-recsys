@@ -153,6 +153,7 @@ def main():
         movieid_to_title
     ).fillna("UNKNOWN_TITLE")
 
+    # user_mapping maps internal_user_id -> original user_id (numeric)
     user_ids_original = pd.Series(
         user_mapping, index=np.arange(len(user_mapping))
     )
@@ -168,10 +169,15 @@ def main():
     top_items_df = pd.DataFrame(top_items_internal_all).applymap(iid_to_title)
     top_items_df.columns = [f"item_{i + 1}" for i in range(K)]
 
+    # ✅ NEW: internal_user_id column for stable lookup in frontend
+    internal_user_ids_col = pd.Series(np.arange(num_users_total), name="internal_user_id")
+
+    # Keep existing numeric user_id too (handy for debugging/legacy)
     result_df = pd.concat(
-        [pd.Series(user_ids_col, name="user_id"), top_items_df],
+        [internal_user_ids_col, pd.Series(user_ids_col, name="user_id"), top_items_df],
         axis=1,
     )
+
 
     # ---------------------------------------------------------
     # 6) Save
